@@ -52,14 +52,7 @@ You're now ready to start working on the project!
 
 ---
 
-Note: If you need to initialize a new repository instead of cloning:
-```bash
-mkdir WebTechFinalProject
-cd WebTechFinalProject
-git init
-git remote add origin [repository-url]
-git pull origin main
-```
+
 
 ## Detailed Git Workflow
 
