@@ -5,7 +5,7 @@
 ```bash
 git add .              # Stage all changes
 git commit -m "msg"    # Commit with message
-git push origin main   # Push to main branch
+git push origin {yourbranchname}   # Push to your branch
 ```
 
 # Cloning and Initializing the WebTechFinalProject
