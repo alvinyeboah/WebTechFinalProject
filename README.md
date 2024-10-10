@@ -20,9 +20,8 @@ cd path/to/desired/location
 
 3. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/alvinyeboah/WebTechFinalProject.git
 ```
-Replace [repository-url] with your actual repository URL
 
 ## First-Time Setup
 
