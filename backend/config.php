@@ -1,6 +1,6 @@
 <?php
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'webtech_fall2024_alvin_yeboah');
-define('DB_USER', 'alvin.yeboah');
-define('DB_PASS', 'thyme84?pro');
+define('DB_NAME', 'Students');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
