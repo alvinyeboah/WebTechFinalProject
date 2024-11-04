@@ -20,5 +20,5 @@ export function middleware(request:any) {
 
 // Specify which paths to apply middleware to
 export const config = {
-  matcher: ['/', '/auctions/:path*', '/profile', '/admin/:path*'],
+  matcher: [],
 };
