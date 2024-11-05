@@ -1,92 +1,140 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { setCookie, getCookie, deleteCookie } from 'cookies-next';
 import jwt from 'jsonwebtoken';
-import { User, RegisterCredentials } from '@/types/user';
 import bcrypt from 'bcrypt';
 import { db } from './db';
-import { NextRequest, NextResponse } from 'next/server';
+import { User, UserRole, RegisterCredentials } from '@/types/user';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET must be defined');
+}
 
-export const createToken = (userId: string): string => {
-  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
+interface UserRow extends User, RowDataPacket {}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const TOKEN_EXPIRY = '1h';
+
+interface JWTPayload {
+  id: string;
+  userRole: UserRole;
+}
+
+export const createToken = (userId: string, userRole: UserRole): string => {
+  return jwt.sign({ id: userId, userRole }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
 };
 
-export const verifyToken = (token: string) => {
+export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET) as JWTPayload;
   } catch (error) {
-    return null; // Token is invalid
+    return null;
   }
 };
 
-export const loginUser = (req: NextRequest, userId: string) => {
-  const token = createToken(userId);
+export const loginUser = (req: NextRequest, userId: string, userRole: UserRole) => {
+  const token = createToken(userId, userRole);
   const response = NextResponse.next();
-  response.cookies.set('token', token, { maxAge: 3600 });
+  response.cookies.set('token', token, { 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 3600 // 1 hour in seconds
+  });
   return response;
 };
 
-export const logoutUser = (req: NextApiRequest) => {
-  deleteCookie('token', { req }); // Remove token cookie
+export const logoutUser = (req: NextRequest) => {
+  const response = NextResponse.next();
+  response.cookies.delete('token');
+  return response;
 };
 
-export const isAuthenticated = (req: NextApiRequest) => {
-  const token = getCookie('token', { req });
-  return token ? verifyToken(token) : null; // Return the decoded token or null if not authenticated
+export const isAuthenticated = async (req: NextRequest) => {
+  const token = req.cookies.get('token')?.value;
+  return token ? verifyToken(token) : null;
 };
 
-export const validateUserCredentials = async (email: string, password: string): Promise<User | null> => {
+export const validateUserCredentials = async (
+  email: string, 
+  password: string
+): Promise<Omit<User, 'password'> | null> => {
   try {
-    // Fetch the user from the database
-    const result = await db.query<User>('SELECT id, email, username, password, createdAt FROM users WHERE email = ?', [email]);
+    const query = `
+      SELECT id, email, username, password, firstName, lastName, userRole, createdAt, lastLogin
+      FROM users 
+      WHERE email = ?
+    `;
+    
+    const [rows] = await db.query<UserRow[]>(query, [email]);
 
-    // Check if user exists and validate the password
-    if (result.length > 0) {
-      const user = result[0];
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (isValidPassword) {
-        return user; // Return the user object if credentials are valid
-      }
-    }
-    return null; // Return null if credentials are invalid
+    if (rows.length === 0) return null;
+
+    const user = rows[0];
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    
+    if (!isValidPassword) return null;
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   } catch (error) {
     console.error('Error validating user credentials:', error);
-    return null; // Handle any errors that may occur
+    throw new Error('Database error during validation');
   }
 };
 
 export const registerUser = async (
-  email: string,
-  password: string,
-  username: string,
-  firstName?: string,
-  lastName?: string
-): Promise<User | null> => {
+  credentials: RegisterCredentials
+): Promise<Omit<User, 'password'> | null> => {
   try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if user already exists
+    const [existingUsers] = await db.query<UserRow[]>(
+      'SELECT id FROM users WHERE email = ? OR username = ?',
+      [credentials.email, credentials.username]
+    );
 
-    // Insert the new user into the database
-    const result = await db.query<{ insertedId: string }>('INSERT INTO users (email, username, password, firstName, lastName, createdAt) VALUES (?, ?, ?, ?, ?, NOW())', [
-      email,
-      username,
+    if (existingUsers.length > 0) {
+      throw new Error('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(credentials.password, 10);
+    
+    const query = `
+      INSERT INTO users (
+        email, 
+        username, 
+        password, 
+        firstName, 
+        lastName, 
+        userRole, 
+        createdAt, 
+        updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+    `;
+
+    const [result] = await db.query<ResultSetHeader>(query, [
+      credentials.email,
+      credentials.username,
       hashedPassword,
-      firstName,
-      lastName,
+      credentials.firstName,
+      credentials.lastName,
+      credentials.userRole,
     ]);
 
-    // Return the new user object
-    return {
-      id: result[0].insertedId,
-      email,
-      username,
-      firstName,
-      lastName,
+    const newUser: Omit<User, 'password'> = {
+      id: result.insertId.toString(),
+      email: credentials.email,
+      username: credentials.username,
+      firstName: credentials.firstName,
+      lastName: credentials.lastName,
+      userRole: credentials.userRole,
       createdAt: new Date(),
+      lastLogin: new Date(),
     };
+
+    return newUser;
   } catch (error) {
     console.error('Error registering user:', error);
-    return null;
+    throw error;
   }
 };

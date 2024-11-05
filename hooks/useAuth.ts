@@ -1,115 +1,166 @@
-import { AuthResponse, User } from '@/types/user';
+import { AuthResponse, User, LoginCredentials, RegisterCredentials, UserRole } from '@/types/user';
 import { useState, useEffect } from 'react';
 
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
+// Type for user data stored in state/localStorage (never includes password)
+type SafeUser = Omit<User, 'password'>;
 
-interface SignUpCredentials {
-  email: string;
-  fName: string;
-  lName: string;
-  password: string;
+interface UseAuthState {
+  user: SafeUser | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false); // Loading state
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [authState, setAuthState] = useState<UseAuthState>({
+    user: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+      try {
+        const parsedUser = JSON.parse(storedUser) as SafeUser;
+        setAuthState(prev => ({
+          ...prev,
+          user: parsedUser,
+          isAuthenticated: true
+        }));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
-    setLoading(true); // Set loading state
-    setError(null); // Reset error state
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
+        credentials: 'include' // Important for cookie handling
       });
 
       if (!response.ok) {
-        throw new Error('Invalid email or password'); // More descriptive error
+        throw new Error(
+          response.status === 401 
+            ? 'Invalid email or password' 
+            : 'Login failed. Please try again.'
+        );
       }
 
       const data: AuthResponse = await response.json();
 
-      if (data.user) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return true;
-      } else {
+      if (!data.user) {
         throw new Error('User data not found in response');
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message); // Set error state
+
+      setAuthState(prev => ({
+        ...prev,
+        user: data.user,
+        isAuthenticated: true,
+        loading: false,
+        error: null
+      }));
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+      return true;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
+      }));
+      
       return false;
-    } finally {
-      setLoading(false); // Reset loading state
     }
   };
 
-  const signUp = async (credentials: SignUpCredentials): Promise<boolean> => {
-    setLoading(true); // Set loading state
-    setError(null); // Reset error state
+  const register = async (credentials: RegisterCredentials): Promise<boolean> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify(credentials),
+        credentials: 'include' // Important for cookie handling
       });
 
       if (!response.ok) {
-        throw new Error('Sign up failed');
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || 
+          (response.status === 409 ? 'Email or username already exists' : 'Registration failed')
+        );
       }
 
       const data: AuthResponse = await response.json();
 
-      if (data.user) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return true;
-      } else {
+      if (!data.user) {
         throw new Error('User data not found in response');
       }
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      setError(error.message); // Set error state
+
+      setAuthState(prev => ({
+        ...prev,
+        user: data.user,
+        isAuthenticated: true,
+        loading: false,
+        error: null
+      }));
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+      return true;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
+      }));
+      
       return false;
-    } finally {
-      setLoading(false); // Reset loading state
     }
   };
 
-  const logout = (): void => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('user');
+  const logout = async (): Promise<void> => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null
+      });
+      localStorage.removeItem('user');
+    }
   };
 
   return {
-    user,
-    isAuthenticated,
-    loading,
-    error,
+    ...authState,
     login,
-    signUp,
+    register,
     logout
   };
 };

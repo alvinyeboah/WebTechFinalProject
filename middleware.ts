@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   const protectedRoutes = ['/dashboard', '/profile', '/account'];
   const isProtectedRoute = protectedRoutes.some((route) => url.pathname.startsWith(route));
   if (!isLoggedIn && isProtectedRoute) {
-    url.pathname = '/auth';
+    url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
 

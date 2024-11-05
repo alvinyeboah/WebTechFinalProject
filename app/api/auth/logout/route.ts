@@ -6,7 +6,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: -1, // Expire immediately
+    maxAge: -1, 
   }));
   return res.status(200).json({ message: 'Logout successful' });
 }

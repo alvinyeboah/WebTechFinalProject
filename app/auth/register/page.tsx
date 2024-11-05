@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 
 import { buttonVariants } from "@/components/ui/button"
-import { UserAuthForm } from "@/components/auth/user-auth-form"
+import { UserAuthForm } from "@/components/auth/register"
 
 export const metadata: Metadata = {
   title: "Auth - The Gallery Vault",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function AuthenticationPage() {
 
   return (
-    <div className="h-full">
+    <div className="h-screen">
       <div className="md:hidden">
         <Image
           src="/examples/authentication-light.png"
@@ -34,7 +34,7 @@ export default function AuthenticationPage() {
       </div>
       <div className="container relative hidden h-[800px] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <Link
-          href="/examples/authentication"
+          href="/auth/login"
           className={cn(
             buttonVariants({ variant: "ghost" }),
             "absolute right-4 top-4 md:right-8 md:top-8"
@@ -70,16 +70,8 @@ export default function AuthenticationPage() {
             </blockquote>
           </div>
         </div>
-        <div className="lg:p-8">
+        <div className="lg:p-8 h-screen justify-center items-center">
           <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-            <div className="flex flex-col space-y-2 text-center">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Create an account
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Enter your details below to create an account
-              </p>
-            </div>
             <UserAuthForm />
             <p className="px-8 text-center text-sm text-muted-foreground">
               By clicking continue, you agree to our{" "}
