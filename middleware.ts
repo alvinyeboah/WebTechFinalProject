@@ -1,24 +1,33 @@
 // middleware.js
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export function middleware(request:any) {
+export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const isLoggedIn = request.cookies.get('authToken');
-
-  if (!isLoggedIn && url.pathname !== '/auth') {
-    url.pathname = '/login';
+  const protectedRoutes = ['/dashboard', '/profile', '/account'];
+  const isProtectedRoute = protectedRoutes.some((route) => url.pathname.startsWith(route));
+  if (!isLoggedIn && isProtectedRoute) {
+    url.pathname = '/auth';
     return NextResponse.redirect(url);
   }
 
-  console.log(`[${new Date().toISOString()}] ${url.pathname}`);
+  console.log(`[${new Date().toISOString()}] ${request.method} ${url.pathname}`);
 
-  // Example: Custom header for security
   const response = NextResponse.next();
   response.headers.set('X-Custom-Header', 'ArtAuctionMiddleware');
+  response.headers.set('X-Frame-Options', 'DENY'); 
+  response.headers.set('X-Content-Type-Options', 'nosniff'); 
+  response.headers.set('X-XSS-Protection', '1; mode=block'); 
+
   return response;
 }
 
-// Specify which paths to apply middleware to
 export const config = {
-  matcher: [],
+  matcher: [
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/account/:path*',
+    '/auction/:path*'
+  ],
 };

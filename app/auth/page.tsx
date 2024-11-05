@@ -1,63 +1,106 @@
-// pages/auction/index.tsx
-import Link from 'next/link';
-import Image from 'next/image';
-import React from 'react';
+import { Metadata } from "next"
+import Image from "next/image"
+import Link from "next/link"
 
-type AuctionData = {
-  slug: string;
-  title: string;
-  artist: string;
-  image: string;
-  price: number;
-};
+import { cn } from "@/lib/utils"
 
-const auctionList: AuctionData[] = [
-  {
-    slug: 'artwork-1',
-    title: 'Artwork 1',
-    artist: 'Artist One',
-    image: 'https://via.placeholder.com/300x200',
-    price: 150,
-  },
-  {
-    slug: 'artwork-2',
-    title: 'Artwork 2',
-    artist: 'Artist Two',
-    image: 'https://via.placeholder.com/300x200',
-    price: 200,
-  },
-];
 
-const AuctionListPage: React.FC = () => {
+import { buttonVariants } from "@/components/ui/button"
+import { UserAuthForm } from "@/components/auth/user-auth-form"
+
+export const metadata: Metadata = {
+  title: "Auth - The Gallery Vault",
+  description: "Sign in to  The Gallery Vault"}
+
+export default function AuthenticationPage() {
+
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-gray-800 my-8">Art Auctions</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-        {auctionList.map((auction) => (
-          <Link href={`/auction/${auction.slug}`} key={auction.slug}>
-            <a className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-              <Image
-                src={auction.image}
-                alt={auction.title}
-                className="w-full h-48 object-cover rounded-md mb-4"
-                width={300}
-                height={200}
-              />
-              <h2 className="text-lg font-semibold text-gray-700">{auction.title}</h2>
-              <p className="text-gray-600 mt-2">by {auction.artist}</p>
-              <p className="text-gray-900 font-bold mt-4">${auction.price.toFixed(2)}</p>
-              <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                View Details
-              </button>
-            </a>
-          </Link>
-        ))}
+    <div className="h-full">
+      <div className="md:hidden">
+        <Image
+          src="/examples/authentication-light.png"
+          width={1280}
+          height={843}
+          alt="Authentication"
+          className="block dark:hidden"
+        />
+        <Image
+          src="/examples/authentication-dark.png"
+          width={1280}
+          height={843}
+          alt="Authentication"
+          className="hidden dark:block"
+        />
       </div>
-      <footer className="mt-10 w-full max-w-6xl text-center py-6 text-gray-500">
-        © 2024 Art Auction. All rights reserved.
-      </footer>
+      <div className="container relative hidden h-[800px] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <Link
+          href="/examples/authentication"
+          className={cn(
+            buttonVariants({ variant: "ghost" }),
+            "absolute right-4 top-4 md:right-8 md:top-8"
+          )}
+        >
+          Login
+        </Link>
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+          <div className="absolute inset-0 bg-zinc-900" />
+          <div className="relative z-20 flex items-center text-lg font-medium">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2 h-6 w-6"
+            >
+              <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
+            </svg>
+            Acme Inc
+          </div>
+          <div className="relative z-20 mt-auto">
+            <blockquote className="space-y-2">
+              <p className="text-lg">
+                &ldquo;This library has saved me countless hours of work and
+                helped me deliver stunning designs to my clients faster than
+                ever before.&rdquo;
+              </p>
+              <footer className="text-sm">Sofia Davis</footer>
+            </blockquote>
+          </div>
+        </div>
+        <div className="lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Create an account
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Enter your details below to create an account
+              </p>
+            </div>
+            <UserAuthForm />
+            <p className="px-8 text-center text-sm text-muted-foreground">
+              By clicking continue, you agree to our{" "}
+              <Link
+                href="/"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  );
-};
-
-export default AuctionListPage;
+  )
+}
