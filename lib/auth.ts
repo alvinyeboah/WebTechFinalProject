@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { setCookie, getCookie, deleteCookie } from 'cookies-next';
 import jwt from 'jsonwebtoken';
@@ -44,11 +45,22 @@ export const loginUser = (req: NextRequest, userId: string, userRole: UserRole) 
   return response;
 };
 
-export const logoutUser = (req: NextRequest) => {
-  const response = NextResponse.next();
-  response.cookies.delete('token');
+export function logoutUser(req: NextRequest) {
+  const response = NextResponse.json(
+    { message: 'Logout successful' },
+    { status: 200 }
+  );
+
+  response.cookies.set('authToken', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
   return response;
-};
+}
 
 export const isAuthenticated = async (req: NextRequest) => {
   const token = req.cookies.get('token')?.value;

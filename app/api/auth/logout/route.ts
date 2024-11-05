@@ -1,12 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { serialize } from 'cookie';
+import { logoutUser } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader('Set-Cookie', serialize('authToken', '', { 
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: -1, 
-  }));
-  return res.status(200).json({ message: 'Logout successful' });
+export async function POST(req: NextRequest) {
+  return logoutUser(req);
 }

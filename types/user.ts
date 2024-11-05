@@ -2,6 +2,19 @@ import { Bid } from "./bid";
 
 export type UserRole = 'BUYER' | 'MUSEUM' | 'ARTIST';
 
+export interface DBUser {
+  id: string;
+  email: string;
+  password: string;  
+  userRole: UserRole;
+  firstName?: string;
+  lastName?: string;
+  username: string;
+}
+
+export type SafeUser = Omit<DBUser, 'password'>;
+
+
 export interface User {
   id: string;
   email: string;
@@ -28,11 +41,9 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterCredentials {
-  email: string;
-  password: string;
+export interface RegisterCredentials extends LoginCredentials {
   username: string;
+  userRole: DBUser['userRole'];
   firstName?: string;
   lastName?: string;
-  userRole: UserRole;
 }

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { registerUser, loginUser } from '@/lib/auth';
 import { RegisterCredentials, User } from '@/types/user';
 
-// Type guard to check if a field exists in RegisterCredentials
 function isRegisterCredentialField(field: string): field is keyof RegisterCredentials {
   return ['email', 'password', 'username', 'userRole', 'firstName', 'lastName'].includes(field);
 }
@@ -13,11 +12,8 @@ interface RegistrationError extends Error {
 
 export async function POST(req: NextRequest) {
   try {
-    // Log the raw request body for debugging
     const rawBody = await req.text();
     console.log('Raw request body:', rawBody);
-
-    // Parse the JSON body
     let credentials: RegisterCredentials;
     try {
       credentials = JSON.parse(rawBody);
@@ -28,22 +24,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Log the parsed credentials (excluding password)
     console.log('Parsed credentials:', {
       ...credentials,
       password: '[REDACTED]'
     });
 
-    // Validate payload structure
     if (!credentials || typeof credentials !== 'object') {
       return NextResponse.json(
         { error: 'Invalid request payload structure' },
         { status: 400 }
       );
     }
-
-    // Validate required fields with type safety and detailed feedback
     const requiredFields = ['email', 'password', 'username', 'userRole'] as const;
     const missingFields = requiredFields.filter(field => {
       if (isRegisterCredentialField(field)) {
@@ -65,8 +56,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(credentials.email)) {
       console.warn('Invalid email format:', credentials.email);
@@ -79,7 +68,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate password requirements with detailed feedback
     const passwordRequirements = {
       minLength: credentials.password.length >= 8,
       hasUpperCase: /[A-Z]/.test(credentials.password),
@@ -103,8 +91,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Validate userRole
     const validRoles = ['BUYER', 'ARTIST', 'MUSEUM'];
     if (!validRoles.includes(credentials.userRole)) {
       return NextResponse.json(
@@ -127,11 +113,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Create response with login cookie
     const response = loginUser(req, user.id, user.userRole);
 
-    // Return the user data without the password
     const { password: _, ...safeUser } = user as User;
     console.log('Registration successful:', safeUser);
     return NextResponse.json({ user: safeUser }, { status: 201 });
@@ -139,7 +122,6 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error('Registration error:', error);
 
-    // Type guard for error message
     const isRegistrationError = (error: unknown): error is RegistrationError => {
       return error instanceof Error && 'message' in error;
     };
@@ -152,7 +134,6 @@ export async function POST(req: NextRequest) {
         );
       }
       
-      // Log the actual error message for debugging
       console.error('Detailed error:', error.message);
     }
 

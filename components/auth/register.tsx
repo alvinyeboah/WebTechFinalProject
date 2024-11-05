@@ -69,7 +69,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       toast.error("Please select a user type");
       return;
     }
-
+  
     try {
       setIsLoading(true);
       const res = await fetch("/api/auth/register", {
@@ -77,12 +77,15 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+  
       if (res.ok) {
         toast.success("Successfully registered!");
-        router.push("/");
+        router.push("/auth/login");
       } else {
-        toast.error("Registration failed");
+        // Attempt to get the specific error message from the response
+        const errorData = await res.json();
+        const errorMessage = errorData?.error || "Registration failed";
+        toast.error(errorMessage);
       }
     } catch (err) {
       toast.error("An error occurred");
@@ -91,6 +94,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       setIsLoading(false);
     }
   };
+  
+  
 
   return (
     <div className={cn("grid gap-6 w-full max-w-md mx-auto p-6", className)} {...props}>
