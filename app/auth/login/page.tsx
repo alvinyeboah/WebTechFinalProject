@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { SignInForm } from "@/components/auth/signin"
+import SignInForm from "@/components/auth/signin"
 
 export const metadata: Metadata = {
   title: "Auth - The Gallery Vault",

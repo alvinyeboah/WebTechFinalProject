@@ -1,30 +1,32 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Icons } from "../ui/icons";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import Link from "next/link";
-
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function SignInForm({ className, ...props }: UserAuthFormProps) {
+const Main = React.memo(function SignInForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const searchParams = useSearchParams();
   const [formData, setFormData] = React.useState({
     email: "",
     password: "",
   });
   const router = useRouter();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value
     });
   };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -38,31 +40,12 @@ export function SignInForm({ className, ...props }: UserAuthFormProps) {
 
       if (res.ok) {
         toast.success("Successfully signed in!");
-        // router.push("/");
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Invalid credentials");
-      }
-    } catch (err) {
-      toast.error("An error occurred");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const signout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        toast.success("Successfully signed in!");
+        const callbackUrl = searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || "Invalid credentials");
@@ -159,8 +142,14 @@ export function SignInForm({ className, ...props }: UserAuthFormProps) {
           Create an account
         </Link>
       </p>
-
-      <Toaster position="top-right" />
     </div>
+  );
+});
+
+export default function SignInForm(props: UserAuthFormProps) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Main {...props} />
+    </Suspense>
   );
 }

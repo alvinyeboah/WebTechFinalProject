@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcryptjs from 'bcryptjs';
 import { db } from './db';
 import { RegisterCredentials, User, UserRole } from '@/types/user';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
@@ -75,7 +75,7 @@ export const validateUserCredentials = async (
     const user = rows[0];
     
     // Validate password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcryptjs.compare(password, user.password);
     if (!isValidPassword) return null;
 
     // Update last login
@@ -99,11 +99,11 @@ export const getUserFromToken = async (token: string): Promise<Omit<User, 'passw
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     
     const query = `
-      SELECT id, email, username, firstName, lastName, userRole, 
-             createdAt, lastLogin, dob, language, bio
-      FROM users 
-      WHERE id = ?
-    `;
+    SELECT id, email, username, firstName, lastName, userRole, 
+           createdAt, lastLogin, dob, language, bio
+    FROM users 
+    WHERE id = ?
+  `;
     
     const [rows] = await db.query<(User & RowDataPacket)[]>(query, [decoded.id]);
     
@@ -135,9 +135,10 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Us
   }
 
   // Hash password
-  const hashedPassword = await bcrypt.hash(credentials.password, SALT_ROUNDS);
+  const hashedPassword = await bcryptjs.hash(credentials.password, SALT_ROUNDS);
 
   // Prepare user data
+  // ... existing code ...
   const userData = {
     email: credentials.email.toLowerCase(),
     username: credentials.username,
@@ -147,30 +148,31 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Us
     userRole: credentials.userRole,
     language: credentials.language || 'en',
     createdAt: new Date(),
-    lastLogin: new Date()
+    lastLogin: new Date(),
+    bio: credentials.bio || '' // Add this line
   };
-
-  // Insert new user
+// ... existing code ...
   const insertQuery = `
-    INSERT INTO users (
-      email, username, password, firstName, lastName,
-      userRole, language, createdAt, lastLogin, dob, language, bio
-    ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?
-    )
-  `;
-
-  const values = [
-    userData.email,
-    userData.username,
-    userData.password,
-    userData.firstName,
-    userData.lastName,
-    userData.userRole,
-    userData.language,
-    userData.createdAt,
-    userData.lastLogin,
-  ];
+  INSERT INTO users (
+    email, username, password, firstName, lastName,
+    userRole, language, createdAt, lastLogin, bio
+  ) VALUES (
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?
+  )
+`;
+const values = [
+  userData.email,
+  userData.username,
+  userData.password,
+  userData.firstName,
+  userData.lastName,
+  userData.userRole,
+  userData.language,
+  userData.createdAt,
+  userData.lastLogin,
+  userData.bio || '',
+];
 
   try {
     const [result] = await db.query<ResultSetHeader>(insertQuery, values);
@@ -194,8 +196,6 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Us
     throw error;
   }
 }
-
-
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
     return jwt.verify(token, JWT_SECRET) as JWTPayload;
