@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { User } from '@/types/user';
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
+export const USER_QUERY_KEY = ['user'] as const;
+
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

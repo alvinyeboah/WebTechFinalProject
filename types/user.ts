@@ -1,6 +1,11 @@
 import { Bid } from "./bid";
 
-export type UserRole = 'BUYER' | 'MUSEUM' | 'ARTIST';
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  BUYER = 'BUYER', 
+  MUSEUM = 'MUSEUM',
+  ARTIST = 'ARTIST',
+}
 
 export interface DBUser {
   id: string;
@@ -52,4 +57,5 @@ export interface RegisterCredentials extends LoginCredentials {
   firstName?: string;
   language?: string; // New field
   lastName?: string;
+  bio?: string;  // Optional bio field
 }

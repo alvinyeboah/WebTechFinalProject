@@ -72,11 +72,11 @@ const accountFormSchema = z.object({
     required_error: "Please select a language.",
   }),
 });
-
 type AccountFormValues = z.infer<typeof accountFormSchema>;
 
 export function AccountForm() {
   const { user, isLoading } = useSession();
+
   const {
     updateProfile,
     isLoading: profileLoading,
@@ -87,11 +87,10 @@ export function AccountForm() {
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
       firstName: user?.firstName || "",
-      lastName: user?.firstName || "",
-      dob: user?.dob ? new Date(user.dob) : new Date(),
+      lastName: user?.lastName || "",
+      dob: user?.dob ? new Date(user.dob) : undefined,
       language: user?.language || "en",
     },
-    mode: "onChange",
   });
 
   useEffect(() => {
@@ -106,15 +105,18 @@ export function AccountForm() {
   }, [user, isLoading, form]);
 
   async function onSubmit(data: AccountFormValues) {
+    const formattedData = {
+      ...data,
+      dob: data.dob.toISOString().slice(0, 19).replace("T", " "), // Format as DATETIME
+    };
+
     try {
-      await updateProfile(data); // Wait for the updateProfile function to complete
-      toast.success("Profile updated successfully"); // Success toast
+      await updateProfile(formattedData);
+      toast.success("User Profile updated successfully");
     } catch (error) {
-      console.error("Profile update failed:", error);
-      toast.error("Failed to update profile. Please try again."); // Error toast
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
     }
   }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -259,7 +261,6 @@ export function AccountForm() {
             </FormItem>
           )}
         />
-        <Toaster />
 
         <Button type="submit">Update account</Button>
       </form>

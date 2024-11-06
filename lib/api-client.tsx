@@ -5,7 +5,7 @@ export type UpdateUserData = {
     email?: string;
     bio?: string;
     firstName?: string;
-    dob?: Date;
+    dob?: string;
     language?: string;
     userRole?: "BUYER" | "SELLER" | "ARTIST" | "MUSEUM";
   };
@@ -36,5 +36,4 @@ export type UpdateUserData = {
   
     return response.json();
   }
-  
   

@@ -1,11 +1,8 @@
 "use client";
-
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
-import { toast,Toaster } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,9 +24,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/context/SessionContext";
 import { useUpdateProfile } from "@/lib/hooks/updateUserProfile";
+import { UserRole } from "@/types/user";
+import { toast } from "react-hot-toast";
 
-const UserRole = ["BUYER", "ARTIST", "MUSEUM"] as const;
-type UserRoleType = (typeof UserRole)[number];
+
 
 const profileFormSchema = z.object({
   username: z
@@ -46,15 +44,18 @@ const profileFormSchema = z.object({
     })
     .email(),
   bio: z.string().max(160).min(4),
-  userRole: z.enum(UserRole, {
+  userRole: z.enum(['BUYER', 'MUSEUM', 'ARTIST', 'SELLER'] as const, {
     required_error: "Please select a role.",
   }),
 });
+
+
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export function ProfileForm() {
   const { user, isLoading } = useSession();
+
   const {
     updateProfile,
     isLoading: profileLoading,
@@ -66,35 +67,32 @@ export function ProfileForm() {
       username: "",
       email: "",
       bio: "",
-      userRole: "BUYER" as UserRoleType,
+      userRole: UserRole.BUYER,
     },
     mode: "onChange",
   });
 
   useEffect(() => {
     if (user && !isLoading) {
-      const userRole = UserRole.includes(user.userRole as UserRoleType)
-        ? (user.userRole as UserRoleType)
-        : "BUYER";
-
       form.reset({
         username: user.username || "",
         email: user.email || "",
-        bio: user.bio || "Empty",
-        userRole,
+        bio: user.bio,
+        userRole: (user.userRole as "BUYER" | "MUSEUM" | "ARTIST" | "SELLER") || UserRole.BUYER
+
       });
     }
   }, [user, isLoading, form]);
 
   async function onSubmit(data: ProfileFormValues) {
     try {
-      await updateProfile(data); // Wait for the updateProfile function to complete
-      toast.success("Profile updated successfully"); // Success toast
+      await updateProfile(data);
+      toast.success("User Profile updated successfully");
     } catch (error) {
-      console.error("Profile update failed:", error);
-      toast.error("Failed to update profile. Please try again."); // Error toast
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
     }
   }
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -133,8 +131,7 @@ export function ProfileForm() {
                 <Input placeholder="Enter your email" {...field} />
               </FormControl>
               <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <Link href="/examples/forms">email settings</Link>.
+              Your main email address used to sign in. Be careful when changing this
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -154,8 +151,7 @@ export function ProfileForm() {
                 />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
+                A little about yourself
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -173,7 +169,7 @@ export function ProfileForm() {
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {UserRole.map((role) => (
+                    {Object.values(UserRole).map((role) => (
                       <SelectItem key={role} value={role}>
                         {role.charAt(0) + role.slice(1).toLowerCase()}
                       </SelectItem>
@@ -189,7 +185,6 @@ export function ProfileForm() {
           )}
         />
         <Button type="submit">Update Profile</Button>
-        <Toaster/>
       </form>
     </Form>
   );
