@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { registerUser, loginUser } from '@/lib/auth';
+import { loginUser, registerUser } from '@/lib/auth';
 import { RegisterCredentials, User } from '@/types/user';
 
 function isRegisterCredentialField(field: string): field is keyof RegisterCredentials {
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const response = loginUser(req, user.id, user.userRole);
+    const response = loginUser(user.id, user.userRole);
 
     const { password: _, ...safeUser } = user as User;
     console.log('Registration successful:', safeUser);

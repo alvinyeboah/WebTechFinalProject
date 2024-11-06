@@ -22,11 +22,14 @@ export interface User {
   firstName?: string;
   lastName?: string;
   password: string;
+  bio:string;
   avatar?: string;
   createdAt: Date;
   lastLogin: Date;
   userRole: UserRole; 
   bidHistory?: Bid[];
+  language?:string;
+  dob?:string;
   favorites?: string[];
 }
 
@@ -34,6 +37,8 @@ export interface AuthResponse {
   user: Omit<User, 'password'>;  
   token: string;
   expiresIn: number;
+  message:string;
+  error:string;
 }
 
 export interface LoginCredentials {
@@ -45,5 +50,6 @@ export interface RegisterCredentials extends LoginCredentials {
   username: string;
   userRole: DBUser['userRole'];
   firstName?: string;
+  language?: string; // New field
   lastName?: string;
 }
