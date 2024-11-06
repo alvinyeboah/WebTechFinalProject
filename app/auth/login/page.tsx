@@ -1,12 +1,8 @@
 import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-
 import { cn } from "@/lib/utils"
-
-
 import { buttonVariants } from "@/components/ui/button"
-import { UserAuthForm } from "@/components/auth/register"
 import { SignInForm } from "@/components/auth/signin"
 
 export const metadata: Metadata = {
@@ -14,7 +10,6 @@ export const metadata: Metadata = {
   description: "Sign in to  The Gallery Vault"}
 
 export default function AuthenticationPage() {
-
   return (
     <div className="h-screen">
       <div className="md:hidden">

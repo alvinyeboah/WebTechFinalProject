@@ -9,6 +9,7 @@ import { Icons } from "../ui/icons";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function SignInForm({ className, ...props }: UserAuthFormProps) {
@@ -17,16 +18,13 @@ export function SignInForm({ className, ...props }: UserAuthFormProps) {
     email: "",
     password: "",
   });
-
   const router = useRouter();
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value
     });
   };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -40,7 +38,31 @@ export function SignInForm({ className, ...props }: UserAuthFormProps) {
 
       if (res.ok) {
         toast.success("Successfully signed in!");
-        router.push("/");
+        // router.push("/");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Invalid credentials");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const signout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        toast.success("Successfully signed in!");
       } else {
         const data = await res.json();
         toast.error(data.error || "Invalid credentials");

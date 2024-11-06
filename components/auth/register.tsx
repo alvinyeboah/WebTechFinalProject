@@ -39,29 +39,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     });
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: formData.email, 
-          password: formData.password 
-        }),
-      });
-
-      if (res.ok) {
-        toast.success("Successfully logged in!");
-        router.push("/");
-      } else {
-        toast.error("Login failed");
-      }
-    } catch (err) {
-      toast.error("An error occurred");
-      console.error(err);
-    }
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
