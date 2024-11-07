@@ -19,15 +19,28 @@ import {
 import { MainNav } from "./components/main-nav"
 import { Overview } from "./components/overview"
 import { RecentSales } from "./components/recent-sales"
-import { Search } from "./components/search"
-import TeamSwitcher from "./components/team-switcher"
 import { UserNav } from "./components/user-nav"
 import { CalendarDateRangePicker } from "./components/date-range-picker"
 import { useSession } from "@/context/SessionContext"
+import { UserRole } from "@/types/user"
+import { useRequireAuth } from "@/hooks/useRequireAuth"
 
 
 export default function DashboardPage() {
-  const { user } = useSession();
+  const { user, isLoading } = useRequireAuth([
+    UserRole.BUYER,
+    UserRole.MUSEUM,
+    UserRole.ARTIST
+  ]);
+
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // The useRequireAuth hook will handle the redirect
+  }
   return (
     <>
       <div className="md:hidden">

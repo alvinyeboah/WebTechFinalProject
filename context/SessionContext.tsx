@@ -8,7 +8,6 @@ import { User } from '@/types/user';
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const USER_QUERY_KEY = ['user'] as const;
 
-
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +62,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
-
   const logout = async () => {
     try {
       setIsLoading(true);

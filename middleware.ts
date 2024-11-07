@@ -2,44 +2,45 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyTokenEdge } from './lib/edge-auth';
 import { AUTH_COOKIE_NAME } from './lib/constants';
+import { UserRole } from './types/user';
+
+const PROTECTED_ROUTES = [
+  {
+    path: '/dashboard',
+    roles: [UserRole.BUYER, UserRole.MUSEUM, UserRole.ARTIST]
+  },
+  {
+    path: '/settings',
+    roles: [UserRole.BUYER, UserRole.MUSEUM, UserRole.ARTIST]
+  },
+];
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(AUTH_COOKIE_NAME);
   const url = request.nextUrl.clone();
 
-  // Improved route protection patterns
-  const protectedPatterns = [
-    '/dashboard',
-    '/settings',
-    '/auction',
-    '/api/protected'
-  ];
-
-  const isProtectedRoute = protectedPatterns.some(pattern => 
-    url.pathname.startsWith(pattern)
+  const protectedRoute = PROTECTED_ROUTES.find(route => 
+    url.pathname.startsWith(route.path)
   );
 
-  const isAuthPage = url.pathname.startsWith('/auth/');
+  if (protectedRoute) {
+    if (!authToken?.value) {
+      // Redirect to login if no auth token
+      return createLoginRedirect(request.url);
+    }
 
-  if (authToken?.value) {
     try {
       const tokenData = await verifyTokenEdge(authToken.value);
       
-      if (!tokenData.userId) {
+      // Check if the user role is valid for the protected route
+      if (!tokenData.userId || !tokenData.userRole || !protectedRoute.roles.includes(tokenData.userRole as UserRole)) {
+        // Redirect to login if user role is not authorized
         return createLoginRedirect(request.url);
       }
-
-      // Redirect authenticated users away from auth pages
-      if (isAuthPage) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
-
     } catch (error) {
-      console.error('Token verification error:', error);
+      // Redirect to login if token verification fails
       return createLoginRedirect(request.url);
     }
-  } else if (isProtectedRoute) {
-    return createLoginRedirect(request.url);
   }
 
   return addSecurityHeaders(NextResponse.next());
@@ -48,10 +49,8 @@ export async function middleware(request: NextRequest) {
 function createLoginRedirect(requestUrl: string) {
   const loginUrl = new URL('/auth/login', requestUrl);
   loginUrl.searchParams.set('callbackUrl', requestUrl);
-  loginUrl.searchParams.set('showAuthToast', 'true');
-  const response = NextResponse.redirect(loginUrl);
-  response.cookies.delete(AUTH_COOKIE_NAME);
-  return response;
+  loginUrl.searchParams.set('showAuthToast', 'true'); // Set the parameter to show the toast
+  return NextResponse.redirect(loginUrl);
 }
 
 function addSecurityHeaders(response: NextResponse) {
