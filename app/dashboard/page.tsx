@@ -19,17 +19,62 @@ import {
 import { MainNav } from "./components/main-nav"
 import { Overview } from "./components/overview"
 import { RecentSales } from "./components/recent-sales"
-import { Search } from "./components/search"
-import TeamSwitcher from "./components/team-switcher"
 import { UserNav } from "./components/user-nav"
 import { CalendarDateRangePicker } from "./components/date-range-picker"
 import { useSession } from "@/context/SessionContext"
+import { UserRole } from "@/types/user"
+import { useRequireAuth } from "@/hooks/useRequireAuth"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 
 export default function DashboardPage() {
-  const { user } = useSession();
+  const [countdown, setCountdown] = useState(5);
+  const router = useRouter();
+  const { user, isLoading } = useRequireAuth([
+    UserRole.BUYER,
+    UserRole.MUSEUM,
+    UserRole.ARTIST
+  ]);
+
+  useEffect(() => {
+    if (user && user.userRole === UserRole.BUYER) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [user]);
+
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // The useRequireAuth hook will handle the redirect
+  }
   return (
     <>
+     {user.userRole === UserRole.BUYER && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-4 rounded shadow-lg">
+            <h2 className="text-lg font-semibold">Access Denied</h2>
+            <p>You need to change your user type to access this page.</p>
+            <p>Redirecting to home in {countdown} seconds...</p>
+            <div className="flex space-x-2">
+              <Button onClick={() => router.push('/')}>Go Home</Button>
+              <Button onClick={() => router.push('/settings')}>Go to Settings</Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="md:hidden">
         <Image
           src="/examples/dashboard-light.png"

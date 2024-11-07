@@ -6,4 +6,6 @@ import { User } from "./user";
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    checkSession: () => void; // Add this line
+
   }

@@ -32,7 +32,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useSession } from "@/context/SessionContext";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { useUpdateProfile } from "@/lib/hooks/updateUserProfile";
 
@@ -73,9 +73,9 @@ const accountFormSchema = z.object({
   }),
 });
 type AccountFormValues = z.infer<typeof accountFormSchema>;
-
 export function AccountForm() {
   const { user, isLoading } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     updateProfile,
@@ -83,14 +83,16 @@ export function AccountForm() {
     error,
   } = useUpdateProfile();
 
+  const defaultValues = useMemo(() => ({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    dob: user?.dob ? new Date(user.dob) : undefined,
+    language: user?.language || "en",
+  }), [user]);
+  
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
-    defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      dob: user?.dob ? new Date(user.dob) : undefined,
-      language: user?.language || "en",
-    },
+    defaultValues,
   });
 
   useEffect(() => {
@@ -105,16 +107,18 @@ export function AccountForm() {
   }, [user, isLoading, form]);
 
   async function onSubmit(data: AccountFormValues) {
-    const formattedData = {
-      ...data,
-      dob: data.dob.toISOString().slice(0, 19).replace("T", " "), // Format as DATETIME
-    };
-
+    setIsSubmitting(true);
     try {
+      const formattedData = {
+        ...data,
+        dob: data.dob.toISOString().slice(0, 19).replace("T", " "),
+      };
       await updateProfile(formattedData);
       toast.success("User Profile updated successfully");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update profile");
+    } finally {
+      setIsSubmitting(false);
     }
   }
   return (

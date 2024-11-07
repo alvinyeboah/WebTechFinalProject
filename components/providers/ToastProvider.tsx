@@ -22,6 +22,7 @@ export function ToastProvider() {
       })
     }
   }, [searchParams])
+  
   return <Toaster />
 }
 

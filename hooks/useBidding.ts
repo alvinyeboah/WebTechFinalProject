@@ -116,7 +116,6 @@ export const useBidding = (artworkId: string) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(peak => peak.hour);
-
     return {
       bids,
       totalBids: bids.length,

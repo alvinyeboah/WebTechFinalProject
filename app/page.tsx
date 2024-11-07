@@ -1,11 +1,23 @@
-import React from 'react'
+import React from "react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
-type Props = {}
+type Props = {};
 
 function page({}: Props) {
   return (
-    <div>page</div>
-  )
+    <div>
+      <HoverCard>
+        <HoverCardTrigger>Hover</HoverCardTrigger>
+        <HoverCardContent>
+          The React Framework – created and maintained by @vercel.
+        </HoverCardContent>
+      </HoverCard>
+    </div>
+  );
 }
 
-export default page
+export default page;

@@ -1,7 +1,6 @@
 import { Bid } from "./bid";
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
   BUYER = 'BUYER', 
   MUSEUM = 'MUSEUM',
   ARTIST = 'ARTIST',
