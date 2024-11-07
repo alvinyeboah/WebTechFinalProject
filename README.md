@@ -1,161 +1,36 @@
-# WebTechFinalProject Git Workflow Guide
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Quick Reference
+## Getting Started
 
-```bash
-git add .              # Stage all changes
-git commit -m "msg"    # Commit with message
-git push origin {yourbranchname}   # Push to your branch
-```
-
-# Cloning and Initializing the WebTechFinalProject
-
-## Cloning the Repository
-
-1. Open your terminal
-2. Navigate to where you want the project folder:
-```bash
-cd path/to/desired/location
-```
-
-3. Clone the repository:
-```bash
-git clone https://github.com/alvinyeboah/WebTechFinalProject.git
-```
-
-## First-Time Setup
-
-1. Navigate into the project folder:
-```bash
-cd WebTechFinalProject
-```
-
-2. Set up your Git identity (if you haven't already):
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
-```
-
-## Verifying Setup
-
-1. Check repository status:
-```bash
-git status
-```
-
-2. View remote repository connection:
-```bash
-git remote -v
-```
-
-You're now ready to start working on the project!
-
----
-
-
-
-## Detailed Git Workflow
-
-### 1. Starting Your Work Session
-
-Before you start working, always pull the latest changes:
+First, run the development server:
 
 ```bash
-git pull origin main
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### 2. Making Changes
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Work on your files as normal. When you're ready to save your changes:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-#### Check Status (Optional but Recommended)
-```bash
-git status
-```
-This shows you which files have been modified.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 3. Staging Changes
+## Learn More
 
-To stage all changed files:
-```bash
-git add .
-```
+To learn more about Next.js, take a look at the following resources:
 
-To stage specific files:
-```bash
-git add filename1 filename2
-```
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### 4. Committing Changes
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-```bash
-git commit -m "Brief description of changes"
-```
+## Deploy on Vercel
 
-#### Tips for Good Commit Messages:
-- Keep it short (50 chars or less)
-- Use present tense ("Add feature" not "Added feature")
-- Be specific ("Add user authentication" vs "Update code")
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-#### Examples of Good Commit Messages:
-- "Add responsive navbar"
-- "Fix login form validation"
-- "Update API endpoint documentation"
-
-### 5. Pushing Changes
-
-```bash
-git push origin {your branch name}
-```
-
-## Best Practices
-
-1. **Commit Often**: Make small, frequent commits rather than large, infrequent ones
-2. **Pull Before Push**: Always `git pull` before pushing to avoid conflicts
-3. **Check Status**: Use `git status` regularly to understand what's changed
-4. **Review Before Committing**: Use `git diff` to review changes before committing
-
-## Common Issues and Solutions
-
-### If you forgot to pull before making changes:
-```bash
-git stash
-git pull origin main
-git stash pop
-```
-
-### If you need to undo your last commit:
-```bash
-git reset --soft HEAD~1
-```
-
-## Setting Up Git Aliases for Faster Workflow
-
-Add these to your `.gitconfig` file:
-
-```
-[alias]
-    a = add .
-    c = commit -m
-    p = push origin main
-    s = status
-```
-
-Then you can use:
-```bash
-git a           # Instead of git add .
-git c "message" # Instead of git commit -m "message"
-git p           # Instead of git push origin main
-git s           # Instead of git status
-```
-
-## Need Help?
-
-If you're stuck, try these resources:
-- [Git Documentation](https://git-scm.com/doc)
-- Ask a team member!
-- Check Stack Overflow for specific error messages
-
----
-
-Remember: When in doubt, commit often and push regularly! 🚀
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
