@@ -25,20 +25,15 @@ export async function middleware(request: NextRequest) {
 
   if (protectedRoute) {
     if (!authToken?.value) {
-      // Redirect to login if no auth token
       return createLoginRedirect(request.url);
     }
 
     try {
       const tokenData = await verifyTokenEdge(authToken.value);
-      
-      // Check if the user role is valid for the protected route
       if (!tokenData.userId || !tokenData.userRole || !protectedRoute.roles.includes(tokenData.userRole as UserRole)) {
-        // Redirect to login if user role is not authorized
         return createLoginRedirect(request.url);
       }
     } catch (error) {
-      // Redirect to login if token verification fails
       return createLoginRedirect(request.url);
     }
   }

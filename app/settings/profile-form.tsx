@@ -44,18 +44,15 @@ const profileFormSchema = z.object({
     })
     .email(),
   bio: z.string().max(160).min(4),
-  userRole: z.enum(['BUYER', 'MUSEUM', 'ARTIST', 'SELLER'] as const, {
+  userRole: z.enum(["BUYER", "MUSEUM", "ARTIST"], {
     required_error: "Please select a role.",
   }),
 });
-
-
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export function ProfileForm() {
   const { user, isLoading } = useSession();
-
   const {
     updateProfile,
     isLoading: profileLoading,
@@ -67,23 +64,20 @@ export function ProfileForm() {
       username: "",
       email: "",
       bio: "",
-      userRole: UserRole.BUYER,
+      userRole: "BUYER"
     },
     mode: "onChange",
   });
-
   useEffect(() => {
     if (user && !isLoading) {
       form.reset({
         username: user.username || "",
         email: user.email || "",
-        bio: user.bio,
-        userRole: (user.userRole as "BUYER" | "MUSEUM" | "ARTIST" | "SELLER") || UserRole.BUYER
-
+        bio: user.bio || "",
+        userRole: user.userRole,
       });
     }
   }, [user, isLoading, form]);
-
   async function onSubmit(data: ProfileFormValues) {
     try {
       await updateProfile(data);
