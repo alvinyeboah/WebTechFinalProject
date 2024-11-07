@@ -43,7 +43,7 @@ export const loginUser = (userId: string, userRole: UserRole): NextResponse => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 3600, // 1 hour
+    maxAge: 3600,
     path: '/'
   });
 
@@ -52,23 +52,25 @@ export const loginUser = (userId: string, userRole: UserRole): NextResponse => {
 
 export const validateUserCredentials = async (
   email: string,
-  password: string
+  password: string,
+  username: string | null
 ): Promise<Omit<User, 'password'> | null> => {
   try {
-    // Input validation
-    if (!email || !password) {
+    if ((!email && !username) || !password) {
       return null;
     }
+
 
     // Query user
     const query = `
       SELECT id, email, username, password, firstName, lastName, userRole, 
              createdAt, lastLogin, dob, language, bio
       FROM users 
-      WHERE email = ?
+      WHERE ${email ? 'email = ?' : 'username = ?'}
     `;
     
-    const [rows] = await db.query<(User & RowDataPacket)[]>(query, [email]);
+    const [rows] = await db.query<(User & RowDataPacket)[]>(query, [email || username]);
+
 
     if (rows.length === 0) return null;
 
@@ -119,7 +121,6 @@ export const getUserFromToken = async (token: string): Promise<Omit<User, 'passw
 const SALT_ROUNDS = 12;
 
 export async function registerUser(credentials: RegisterCredentials): Promise<User> {
-  // Check if user already exists
   const existingUserQuery = `
     SELECT id FROM users 
     WHERE email = ? OR username = ?
@@ -136,9 +137,6 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Us
 
   // Hash password
   const hashedPassword = await bcryptjs.hash(credentials.password, SALT_ROUNDS);
-
-  // Prepare user data
-  // ... existing code ...
   const userData = {
     email: credentials.email.toLowerCase(),
     username: credentials.username,

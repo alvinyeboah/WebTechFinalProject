@@ -15,7 +15,7 @@ const Main = React.memo(function SignInForm({ className, ...props }: UserAuthFor
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const searchParams = useSearchParams();
   const [formData, setFormData] = React.useState({
-    email: "",
+    identifier: "", 
     password: "",
   });
   const router = useRouter();
@@ -70,13 +70,12 @@ const Main = React.memo(function SignInForm({ className, ...props }: UserAuthFor
       <form onSubmit={handleSignIn} className="space-y-4">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email or Username</Label>
             <Input
-              id="email"
-              placeholder="name@example.com"
-              type="email"
+              id="identifier"
+              type="text"
               autoCapitalize="none"
-              autoComplete="email"
+              autoComplete="username"
               autoCorrect="off"
               disabled={isLoading}
               onChange={handleInputChange}
