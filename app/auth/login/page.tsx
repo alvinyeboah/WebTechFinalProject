@@ -1,15 +1,22 @@
+"use client"
 import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import SignInForm from "@/components/auth/signin"
-
-export const metadata: Metadata = {
-  title: "Auth - The Gallery Vault",
-  description: "Sign in to  The Gallery Vault"}
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import toast, { useToaster } from "react-hot-toast"
 
 export default function AuthenticationPage() {
+  const router = useRouter();
+  useEffect(() => {
+    const token = document.cookie.split('; ').find(row => row.startsWith('authToken='));
+    if (token) {
+      router.push('/');
+    }
+  }, [router]);
   return (
     <div className="h-screen">
       <div className="md:hidden">

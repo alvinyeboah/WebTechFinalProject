@@ -33,7 +33,7 @@ export interface User {
   userRole: UserRole; 
   bidHistory?: Bid[];
   language?:string;
-  dob?:string;
+  dob?:any;
   favorites?: string[];
 }
 

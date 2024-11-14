@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface MainNavProps extends React.HTMLAttributes<HTMLElement> {}
 
 export function MainNav({ className, ...props }: MainNavProps) {
   const pathname = usePathname();
+  const { user } = useRequireAuth();
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
 
   return (
     <nav
@@ -17,17 +20,21 @@ export function MainNav({ className, ...props }: MainNavProps) {
       )}
       {...props}
     >
-      <Link
-        href="/dashboard"
-        className={cn(
-          "text-sm font-medium transition-colors rounded-md p-5 py-2",
-          isActive("/dashboard")
-            ? "text-primary font-semibold bg-gray-100"
-            : "text-gray-600 hover:text-primary hover:bg-gray-50"
-        )}
-      >
-        Dashboard
-      </Link>
+      {user?.userRole === "BUYER" ? (
+        ""
+      ) : (
+        <Link
+          href="/dashboard"
+          className={cn(
+            "text-sm font-medium transition-colors rounded-md p-5 py-2",
+            isActive("/dashboard")
+              ? "text-primary font-semibold bg-gray-100"
+              : "text-gray-600 hover:text-primary hover:bg-gray-50"
+          )}
+        >
+          Dashboard
+        </Link>
+      )}
 
       <Link
         href="/settings"

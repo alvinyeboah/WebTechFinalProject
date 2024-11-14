@@ -6,9 +6,11 @@ import { cookies } from 'next/headers';
 export async function POST(req: NextRequest) {
   try {
     // Input validation
-    const { email, password } = await req.json();
+    const { identifier, password } = await req.json();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
     
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
@@ -16,7 +18,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate credentials
-    const user = await validateUserCredentials(email, password);
+    const user = await validateUserCredentials(isEmail ? identifier : null, password, isEmail ? null : identifier);
+
     
     if (!user) {
       return NextResponse.json(
@@ -31,19 +34,6 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json(
       {
         message: 'Login successful',
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          userRole: user.userRole,
-          createdAt: user.createdAt,
-          lastLogin: user.lastLogin,
-          language: user.language,
-          dob:user.dob,
-          bio: user.bio,
-        }
       },
       { status: 200 }
     );
