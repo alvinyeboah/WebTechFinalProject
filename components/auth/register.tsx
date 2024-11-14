@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Icons } from "../ui/icons";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -194,8 +194,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         )}
         GitHub
       </Button>
-
-      <Toaster position="top-right" />
     </div>
   );
 }

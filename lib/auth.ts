@@ -5,6 +5,7 @@ import { db } from './db';
 import { RegisterCredentials, User, UserRole } from '@/types/user';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { v4 as uuidv4 } from 'uuid';
+import { AUTH_COOKIE_NAME } from './constants';
 
 
 if (!process.env.JWT_SECRET) {
@@ -13,7 +14,6 @@ if (!process.env.JWT_SECRET) {
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRY = '1h';
-const COOKIE_NAME = 'authToken';
 
 interface JWTPayload {
   id: string;
@@ -39,7 +39,7 @@ export const loginUser = (userId: string, userRole: UserRole): NextResponse => {
     { message: 'Login successful' },
     { status: 200 }
   );
-  response.cookies.set(COOKIE_NAME, token, {
+  response.cookies.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -209,7 +209,7 @@ export const logoutUser = (): NextResponse => {
     { status: 200 }
   );
   
-  response.cookies.set(COOKIE_NAME, '', {
+  response.cookies.set(AUTH_COOKIE_NAME, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
