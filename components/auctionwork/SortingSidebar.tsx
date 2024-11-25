@@ -29,7 +29,7 @@ export default function SortingSidebar() {
   }
 
   return (
-    <aside className={`w-full md:w-1/5 bg-[#1A1C20] text-[#E6D5B8] p-6 ${poppins.variable} font-sans`}>
+    <aside className={`w-full md:w-1/5 bg-[#1A1C20] text-[#E6D5B8] p-6 pt-20 ${poppins.variable} font-sans`}>
       <h2 className="text-2xl font-semibold mb-6 text-[#F0A500]">Filter & Sort</h2>
 
       <div className="mb-6">
