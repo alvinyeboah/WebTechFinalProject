@@ -10,11 +10,9 @@ type Props = {};
 function Page({}: Props) {
   return (
     <div>
-      <ArtGalleryNav/>
       <ArtGalleryHero/>
       <UpcomingAuctions/>
       <FeaturedExhibition/>
-      <Footer/>
     </div>
   );
 }

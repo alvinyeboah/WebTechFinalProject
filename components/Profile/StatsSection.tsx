@@ -1,41 +1,34 @@
- // app/components/profile/StatsSection.tsx
- import { Star } from 'lucide-react';
-  
- interface StatsSectionProps {
-   artworks: number;
-   activeAuctions: number;
-   followers: number;
-   rating: number;
- }
- 
- export const StatsSection = ({
-   artworks,
-   activeAuctions,
-   followers,
-   rating
- }: StatsSectionProps) => {
-   return (
-     <div className="grid grid-cols-4 gap-4 bg-[#1A1A1A] p-6 rounded-xl text-white">
-       <StatItem label="Artworks" value={artworks} />
-       <StatItem label="Active Auctions" value={activeAuctions} />
-       <StatItem label="Followers" value={followers} />
-       <div className="text-center">
-         <div className="text-2xl font-bold text-[#FFD700]">{rating}</div>
-         <div className="text-gray-300 flex items-center justify-center gap-1">
-           Rating
-           <Star className="w-4 h-4 fill-[#FFD700] text-[#FFD700]" />
-         </div>
-       </div>
-     </div>
-   );
- };
- 
- const StatItem = ({ label, value }: { label: string; value: number }) => (
-   <div className="text-center">
-     <div className="text-2xl font-bold text-[#FFD700]">
-       {value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value}
-     </div>
-     <div className="text-gray-300">{label}</div>
-   </div>
- );
- 
+import React from 'react'
+import { Palette, Gavel, Users, Star } from 'lucide-react'
+
+interface StatsSectionProps {
+  artworks: number
+  activeAuctions: number
+  followers: number
+  rating: number
+}
+
+export const StatsSection: React.FC<StatsSectionProps> = ({
+  artworks,
+  activeAuctions,
+  followers,
+  rating
+}) => {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {[
+        { label: 'Artworks', value: artworks, icon: Palette },
+        { label: 'Active Auctions', value: activeAuctions, icon: Gavel },
+        { label: 'Followers', value: followers, icon: Users },
+        { label: 'Rating', value: rating, icon: Star },
+      ].map((stat, index) => (
+        <div key={index} className="bg-[#2A2C30] p-4 rounded-lg text-center">
+          <stat.icon className="w-8 h-8 mx-auto mb-2 text-[#F0A500]" />
+          <p className="text-2xl font-bold text-[#F0A500]">{stat.value}</p>
+          <p className="text-[#E6D5B8]">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+

@@ -70,7 +70,7 @@ const auctions = [
   }
 ]
 
-const UpcomingAuctions = () => {
+export default function UpcomingAuctions() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const scroll = (direction: 'left' | 'right') => {
@@ -90,8 +90,7 @@ const UpcomingAuctions = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Link href="/auctions">Upcoming Auctions</Link>
-          
+          <Link href="/auctions" className="hover:text-[#F0A500] transition-colors">Upcoming Auctions</Link>
         </motion.h2>
         <motion.p 
           className="text-center text-lg mb-12 max-w-2xl mx-auto"
@@ -102,6 +101,13 @@ const UpcomingAuctions = () => {
           Discover and bid on exquisite artworks from various periods and styles. Our curated auctions offer unique opportunities for art enthusiasts and collectors.
         </motion.p>
         <div className="relative">
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={24} />
+          </button>
           <div 
             ref={scrollRef}
             className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide"
@@ -123,28 +129,15 @@ const UpcomingAuctions = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1A1C20] to-transparent opacity-70" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-xl font-semibold mb-2">{auction.title}</h3>
-                  <p className="text-sm mb-1">{new Date(auction.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at {auction.time}</p>
                   <p className="text-sm mb-2">{auction.description}</p>
-                  <button className="text-[#F0A500] hover:text-[#E6D5B8] transition-colors text-sm font-semibold">
-                    View
-                  </button>
-                </div>
-                <div className="absolute top-4 right-4 bg-[#F0A500] text-[#1A1C20] px-3 py-1 rounded-full text-sm font-semibold">
-                  Upcoming
+                  <p className="text-xs">{auction.date} at {auction.time}</p>
                 </div>
               </motion.div>
             ))}
           </div>
           <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#1A1C20] bg-opacity-50 p-2 rounded-full text-[#E6D5B8] hover:text-[#F0A500] transition-colors"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#1A1C20] bg-opacity-50 p-2 rounded-full text-[#E6D5B8] hover:text-[#F0A500] transition-colors"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
             aria-label="Scroll right"
           >
             <ChevronRight size={24} />
@@ -154,5 +147,3 @@ const UpcomingAuctions = () => {
     </section>
   )
 }
-
-export default UpcomingAuctions

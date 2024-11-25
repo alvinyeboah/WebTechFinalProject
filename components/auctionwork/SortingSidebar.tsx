@@ -1,13 +1,19 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Poppins } from 'next/font/google'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Poppins, Playfair_Display } from 'next/font/google'
 
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '600'],
   variable: '--font-poppins',
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-playfair',
 })
 
 const genres = ['Abstract', 'Impressionism', 'Realism', 'Surrealism', 'Pop Art', 'Minimalism']
@@ -29,14 +35,14 @@ export default function SortingSidebar() {
   }
 
   return (
-    <aside className={`w-full md:w-1/5 bg-[#1A1C20] text-[#E6D5B8] p-6 pt-20 ${poppins.variable} font-sans`}>
-      <h2 className="text-2xl font-semibold mb-6 text-[#F0A500]">Filter & Sort</h2>
+    <aside className={`w-full md:w-1/5 bg-[#2A2C30] text-[#E6D5B8] p-6 rounded-lg mb-8 md:mb-0 md:mr-8 ${poppins.variable} ${playfair.variable} font-sans`}>
+      <h2 className={`${playfair.className} text-2xl font-bold mb-6 text-[#F0A500]`}>Filter & Sort</h2>
 
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">End Date</h3>
         <button
           onClick={() => setEndDateSort(endDateSort === 'ascending' ? 'descending' : 'ascending')}
-          className="flex items-center justify-between w-full px-3 py-2 bg-[#2A2C30] rounded-md hover:bg-[#3A3C40] transition-colors"
+          className="flex items-center justify-between w-full px-3 py-2 bg-[#1A1C20] rounded-md hover:bg-[#3A3C40] transition-colors"
         >
           <span>{endDateSort === 'ascending' ? 'Oldest to Newest' : 'Newest to Oldest'}</span>
           {endDateSort === 'ascending' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -52,7 +58,7 @@ export default function SortingSidebar() {
                 type="checkbox"
                 checked={selectedGenres.includes(genre)}
                 onChange={() => toggleSelection(genre, selectedGenres, setSelectedGenres)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#2A2C30]"
+                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
               />
               <span>{genre}</span>
             </label>
@@ -69,7 +75,7 @@ export default function SortingSidebar() {
                 type="checkbox"
                 checked={selectedLocations.includes(location)}
                 onChange={() => toggleSelection(location, selectedLocations, setSelectedLocations)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#2A2C30]"
+                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
               />
               <span>{location}</span>
             </label>
@@ -86,7 +92,7 @@ export default function SortingSidebar() {
                 type="checkbox"
                 checked={selectedTypes.includes(type)}
                 onChange={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#2A2C30]"
+                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
               />
               <span>{type}</span>
             </label>
@@ -100,3 +106,4 @@ export default function SortingSidebar() {
     </aside>
   )
 }
+

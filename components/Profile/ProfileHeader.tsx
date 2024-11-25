@@ -1,59 +1,45 @@
-import { Mail, Share2, MapPin, Medal } from 'lucide-react';
-  
-  interface ProfileHeaderProps {
-    name: string;
-    location: string;
-    bio: string;
-    imageUrl: string;
-    isOnline: boolean;
-  }
-  
-  export const ProfileHeader = ({
-    name,
-    location,
-    bio,
-    imageUrl,
-    isOnline
-  }: ProfileHeaderProps) => {
-    return (
-      <div className="flex items-start gap-8">
-        <div className="relative">
-          <img
-            src={imageUrl}
-            alt={`${name}'s profile`}
-            className="rounded-full w-32 h-32 object-cover border-4 border-[#FFD700] shadow-lg"
-          />
-          {isOnline && (
-            <span className="absolute bottom-0 right-0 bg-[#FFD700] w-4 h-4 rounded-full border-2 border-white"></span>
-          )}
-        </div>
-        
-        <div className="flex-1">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-[#1A1A1A]">{name}</h1>
-              <div className="flex items-center gap-2 text-[#4A4A4A] mt-1">
-                <MapPin className="w-4 h-4" />
-                <span>{location}</span>
-                <Medal className="w-4 h-4 ml-2 text-[#FFD700]" />
-                <span className="text-[#FFD700]">Verified Artist</span>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button className="bg-[#FFD700] hover:bg-[#FFE55C] text-[#1A1A1A] px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                <Mail className="w-4 h-4" />
-                Contact
-              </button>
-              <button className="border border-[#FFD700] text-[#1A1A1A] hover:bg-[#FFD700]/10 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
-            </div>
-          </div>
-          <p className="mt-4 text-[#4A4A4A]">{bio}</p>
-        </div>
+import React from 'react'
+import Image from 'next/image'
+import { User } from 'lucide-react'
+
+interface ProfileHeaderProps {
+  name: string
+  location: string
+  bio: string
+  imageUrl: string
+  isOnline: boolean
+}
+
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+  name,
+  location,
+  bio,
+  imageUrl,
+  isOnline
+}) => {
+  return (
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-[#2A2C30] p-6 rounded-lg shadow-lg">
+      <div className="relative">
+        <Image
+          src={imageUrl}
+          alt={name}
+          width={150}
+          height={150}
+          className="rounded-full"
+        />
+        {isOnline && (
+          <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-[#2A2C30]"></div>
+        )}
       </div>
-    );
-  };
-  
- 
+      <div className="text-center md:text-left">
+        <h1 className={`text-3xl font-bold text-[#F0A500] font-playfair mb-2`}>{name}</h1>
+        <p className="text-[#E6D5B8] mb-4 flex items-center justify-center md:justify-start">
+          <User size={16} className="mr-2" />
+          {location}
+        </p>
+        <p className="text-[#E6D5B8] max-w-2xl">{bio}</p>
+      </div>
+    </div>
+  )
+}
+
