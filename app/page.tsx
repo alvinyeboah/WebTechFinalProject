@@ -7,7 +7,7 @@ import Footer from "@/components/home/footer";
 
 type Props = {};
 
-function page({}: Props) {
+function Page({}: Props) {
   return (
     <div>
       <ArtGalleryNav/>
@@ -19,4 +19,4 @@ function page({}: Props) {
   );
 }
 
-export default page;
+export default Page;
