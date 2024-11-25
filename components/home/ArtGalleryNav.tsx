@@ -70,7 +70,7 @@ const ArtGalleryNav = () => {
   )
 }
 
-const NavItem = ({ item, index, isScrolled }) => (
+const NavItem: React.FC<{ item: { href: string; icon: React.ElementType; label: string }; index: number; isScrolled: boolean }> = ({ item, index, isScrolled }) => (
   <Link href={item.href}>
     <motion.div
       className="group relative"
@@ -92,7 +92,7 @@ const NavItem = ({ item, index, isScrolled }) => (
   </Link>
 )
 
-const MobileMenu = ({ items, setIsMobileMenuOpen }) => (
+const MobileMenu: React.FC<{ items: { href: string; icon: React.ElementType; label: string }[]; setIsMobileMenuOpen: (open: boolean) => void }> = ({ items, setIsMobileMenuOpen }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
