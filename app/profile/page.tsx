@@ -2,6 +2,7 @@ import React from 'react'
 import { ProfileHeader } from '@/components/Profile/ProfileHeader';
 import { StatsSection } from '@/components/Profile/StatsSection';
 import { AuctionsSection } from '@/components/Profile/AuctionSections';
+import ArtGalleryNav from "@/components/home/ArtGalleryNav"
 
 const mockAuctions = [
   {
@@ -18,6 +19,7 @@ const mockAuctions = [
 export default function ProfilePage() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <ArtGalleryNav/>
       <ProfileHeader
         name="Sarah Anderson"
         location="New York, USA"
