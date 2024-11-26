@@ -41,12 +41,12 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
   const { user } = useSession();
   return (
     <>
-      <div className="flex h-16 items-center pr-4">
+      <div className="flex items-center pr-4">
             {/* <TeamSwitcher user={user} /> will replace this later, probably with logo */}
-        <MainNav className="mx-6" />
+        {/* <MainNav className="mx-6" /> */}
         <div className="ml-auto flex items-center space-x-4">
           {/* <Search /> */}
-          <UserNav />
+          {/* <UserNav /> */}
         </div>
       </div>
       <Separator/>

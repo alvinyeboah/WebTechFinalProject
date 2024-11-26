@@ -5,7 +5,16 @@ import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { User } from '@/types/user';
 
-const SessionContext = createContext<SessionContextType | undefined>(undefined);
+// Create a default context value with all required properties
+const defaultContextValue: SessionContextType = {
+  user: null,
+  isLoading: true,
+  login: async () => {},
+  logout: async () => {},
+  checkSession: async () => {},
+};
+
+const SessionContext = createContext<SessionContextType>(defaultContextValue);
 export const USER_QUERY_KEY = ['user'] as const;
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
@@ -14,16 +23,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!user) checkSession();
-  }, [pathname]);
-
   const checkSession = async () => {
     try {
       const response = await fetch('/api/auth/session');
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        if (data.user) {
+          const sanitizedUser = {
+            ...data.user,
+            createdAt: data.user?.createdAt?.toString(),
+            updatedAt: data.user?.updatedAt?.toString(),
+          };
+          setUser(sanitizedUser);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -47,10 +61,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (response.ok) {
-        setUser(data.user);
+        await checkSession(); // Fetch the user data after successful login
         toast.success('Successfully signed in!');
         const params = new URLSearchParams(window.location.search);
-        const redirectTo = params.get('from') || '/dashboard';
+        const redirectTo = params.get('from') || '/';
         router.push(redirectTo);
       } else {
         toast.error(data.error || 'Invalid credentials');
@@ -62,6 +76,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
+
   const logout = async () => {
     try {
       setIsLoading(true);
@@ -72,7 +87,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         setUser(null);
         toast.success('Successfully signed out!');
-        router.push('/auth/login');
+        router.push('/');
       }
     } catch (error) {
       console.error('Logout error:', error);
@@ -81,6 +96,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user) {
+      checkSession();
+    }
+  }, [pathname]);
 
   return (
     <SessionContext.Provider value={{ user, isLoading, login, logout, checkSession }}>
