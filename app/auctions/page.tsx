@@ -10,7 +10,7 @@ export default function Page() {
       <div className="flex flex-col top md:flex-row flex-grow">
         <SortingSidebar />
         <main className="w-full md:flex-grow p-4">
-          <ArtGalleryHero />
+          {/* <ArtGalleryHero /> */}
           <AuctionsPage />
         </main>
       </div>

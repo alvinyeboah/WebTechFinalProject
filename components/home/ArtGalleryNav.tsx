@@ -1,37 +1,52 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Menu, Search, User, ShoppingCart } from 'lucide-react'
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Menu, Search, User, ShoppingCart } from "lucide-react";
+import { useSession } from "@/context/SessionContext";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/exhibitions", label: "Exhibitions" },
-  { href: "/artists", label: "Artists" },
+  { href: "/galleryex", label: "Exhibitions" },
+  { href: "/artworks", label: "Artworks" },
   { href: "/auctions", label: "Auctions" },
-  { href: "/about", label: "About" },
-]
+];
 
 export default function ArtGalleryNav() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logout } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-black/90 backdrop-blur-md' : 'bg-[#1A1C20]'
-    }`}>
+    <nav
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled ? "bg-black/90 backdrop-blur-md" : "bg-[#1A1C20]"
+      }`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          <Link href="/" className="text-2xl md:text-3xl font-bold text-amber-400 hover:text-white transition-colors duration-300">
+          <Link
+            href="/"
+            className="text-2xl md:text-3xl font-bold text-amber-400 hover:text-white transition-colors duration-300"
+          >
             <motion.span
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -48,16 +63,59 @@ export default function ArtGalleryNav() {
             ))}
           </div>
           <div className="flex items-center space-x-4">
-            <NavIcon icon={Search} label="Search" />
-            <NavIcon icon={User} label="Account" />
-            <NavIcon icon={ShoppingCart} label="Cart" />
+            {/* <NavIcon icon={Search} label="Search" /> */}
+
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Link href="/dashboard">
+                  <Button
+                    variant="ghost"
+                    className="text-amber-400 hover:text-white"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+                <Link href="/settings">
+                  <Button
+                    variant="ghost"
+                    className="text-amber-400 hover:text-white"
+                  >
+                    Settings
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={handleLogout}
+                  className="text-amber-400 hover:text-white"
+                >
+                  Sign Out
+                </Button>
+                <Link href="/cart">
+                  <NavIcon icon={ShoppingCart} label="Cart" />
+                </Link>
+              </div>
+            ) : (
+              <Link href="/auth/login">
+                <Button
+                  variant="ghost"
+                  className="text-amber-400 hover:text-white"
+                >
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
             <div className="md:hidden">
               <button
                 className="text-amber-400 hover:text-white transition-colors duration-300"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </button>
             </div>
           </div>
@@ -65,7 +123,12 @@ export default function ArtGalleryNav() {
       </div>
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <MobileMenu items={navItems} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+          <MobileMenu
+            items={navItems}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            user={user}
+            onLogout={handleLogout}
+          />
         )}
       </AnimatePresence>
       <motion.div
@@ -75,10 +138,13 @@ export default function ArtGalleryNav() {
         transition={{ duration: 0.5 }}
       />
     </nav>
-  )
+  );
 }
 
-const NavItem: React.FC<{ item: { href: string; label: string }; index: number }> = ({ item, index }) => (
+const NavItem: React.FC<{
+  item: { href: string; label: string };
+  index: number;
+}> = ({ item, index }) => (
   <Link href={item.href}>
     <motion.div
       className="group relative px-3 py-2"
@@ -97,15 +163,26 @@ const NavItem: React.FC<{ item: { href: string; label: string }; index: number }
       />
     </motion.div>
   </Link>
-)
+);
 
-const NavIcon: React.FC<{ icon: React.ElementType; label: string }> = ({ icon: Icon, label }) => (
-  <button className="text-amber-400 hover:text-white transition-colors duration-300" aria-label={label}>
+const NavIcon: React.FC<{ icon: React.ElementType; label: string }> = ({
+  icon: Icon,
+  label,
+}) => (
+  <button
+    className="text-amber-400 hover:text-white transition-colors duration-300"
+    aria-label={label}
+  >
     <Icon className="h-6 w-6" />
   </button>
-)
+);
 
-const MobileMenu: React.FC<{ items: { href: string; label: string }[]; setIsMobileMenuOpen: (open: boolean) => void }> = ({ items, setIsMobileMenuOpen }) => (
+const MobileMenu: React.FC<{
+  items: { href: string; label: string }[];
+  setIsMobileMenuOpen: (open: boolean) => void;
+  user: any;
+  onLogout: () => void;
+}> = ({ items, setIsMobileMenuOpen, user, onLogout }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -130,6 +207,42 @@ const MobileMenu: React.FC<{ items: { href: string; label: string }[]; setIsMobi
         </motion.div>
       </Link>
     ))}
-  </motion.div>
-)
 
+    {/* Auth-related mobile menu items */}
+    {user ? (
+      <>
+        <Link
+          href="/dashboard"
+          className="block py-3 px-4 text-amber-400 hover:bg-amber-400/20 hover:text-white transition-colors duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          Dashboard
+        </Link>
+        <Link
+          href="/settings"
+          className="block py-3 px-4 text-amber-400 hover:bg-amber-400/20 hover:text-white transition-colors duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          Settings
+        </Link>
+        <button
+          onClick={() => {
+            onLogout();
+            setIsMobileMenuOpen(false);
+          }}
+          className="w-full text-left py-3 px-4 text-amber-400 hover:bg-amber-400/20 hover:text-white transition-colors duration-300"
+        >
+          Sign Out
+        </button>
+      </>
+    ) : (
+      <Link
+        href="/auth/login"
+        className="block py-3 px-4 text-amber-400 hover:bg-amber-400/20 hover:text-white transition-colors duration-300"
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+        Sign In
+      </Link>
+    )}
+  </motion.div>
+);

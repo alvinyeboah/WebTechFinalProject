@@ -4,38 +4,35 @@ import { verifyTokenEdge } from './lib/edge-auth';
 import { AUTH_COOKIE_NAME } from './lib/constants';
 import { UserRole } from './types/user';
 
-const PROTECTED_ROUTES = [
-  {
-    path: '/dashboard',
-    roles: [UserRole.BUYER, UserRole.MUSEUM, UserRole.ARTIST]
-  },
-  {
-    path: '/settings',
-    roles: [UserRole.BUYER, UserRole.MUSEUM, UserRole.ARTIST]
-  },
-];
+const PUBLIC_PATHS = ['/auth/login', '/auth/register', '/'];
 
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get(AUTH_COOKIE_NAME);
   const url = request.nextUrl.clone();
 
-  const protectedRoute = PROTECTED_ROUTES.find(route => 
-    url.pathname.startsWith(route.path)
-  );
+  // Allow public paths
+  if (PUBLIC_PATHS.includes(url.pathname)) {
+    return NextResponse.next();
+  }
 
-  if (protectedRoute) {
-    if (!authToken?.value) {
+  // Check authentication
+  if (!authToken?.value) {
+    return createLoginRedirect(request.url);
+  }
+
+  try {
+    const tokenData = await verifyTokenEdge(authToken.value);
+    if (!tokenData.userId) {
       return createLoginRedirect(request.url);
     }
 
-    try {
-      const tokenData = await verifyTokenEdge(authToken.value);
-      if (!tokenData.userId || !tokenData.userRole || !protectedRoute.roles.includes(tokenData.userRole as UserRole)) {
-        return createLoginRedirect(request.url);
-      }
-    } catch (error) {
-      return createLoginRedirect(request.url);
+    // Add role-based checks if needed
+    if (url.pathname.startsWith('/dashboard') && tokenData.userRole === 'BUYER') {
+      return NextResponse.redirect(new URL('/settings', request.url));
     }
+
+  } catch (error) {
+    return createLoginRedirect(request.url);
   }
 
   return addSecurityHeaders(NextResponse.next());
@@ -66,6 +63,7 @@ function addSecurityHeaders(response: NextResponse) {
 
 export const config = {
   matcher: [
+    '/',
     '/dashboard/:path*',
     '/settings/:path*',
     '/auction/:path*',

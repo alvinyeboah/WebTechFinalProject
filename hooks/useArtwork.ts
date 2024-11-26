@@ -19,11 +19,20 @@ export const useArtwork = () => {
     try {
       // Fetch local artworks
       const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data: ApiResponseType<Artwork[]> = await response.json();
       
+      // Add status check with more detailed error
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch artworks: ${response.status} ${response.statusText}`
+        );
+      }
+
+      // Add response type check
+      const data = await response.json();
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from API');
+      }
+
       if ('error' in data) {
         throw new Error(data.error);
       }
@@ -38,9 +47,15 @@ export const useArtwork = () => {
       
       setArtworks(combinedArtworks);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching artworks';
+      const errorMessage = err instanceof Error 
+        ? `Artwork fetch failed: ${err.message}`
+        : 'An unexpected error occurred while fetching artworks';
       setError(errorMessage);
-      console.error('Fetch error:', err);
+      console.error('[useArtwork] fetchArtworks error:', {
+        error: err,
+        endpoint: API_URL,
+        query: query || 'none'
+      });
     } finally {
       setLoading(false);
     }

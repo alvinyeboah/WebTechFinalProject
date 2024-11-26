@@ -1,26 +1,10 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import { SessionProvider } from "@/context/SessionContext";
-import ToastProviderWrapper from "@/components/providers/ToastProvider";
-import ArtGalleryNav from "@/components/home/ArtGalleryNav";
-import Footer from "@/components/home/footer";
+import ClientWrapper from "./ClientWrapper";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata: Metadata = {
-  title: "The Gallery Vault",
-  description: "Your art auction home",
-};
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 
 export default function RootLayout({
   children,
@@ -29,16 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <link rel="icon" href="/favicon.ico" />
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <ArtGalleryNav />
-          <main className="flex-grow pt-16"> {children}</main>
-          <Footer />
-          <ToastProviderWrapper />
-        </SessionProvider>
+        <ClientWrapper> {children}</ClientWrapper>
       </body>
     </html>
   );

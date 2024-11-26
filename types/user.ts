@@ -28,7 +28,8 @@ export interface User {
   password: string;
   bio:string;
   avatar?: string;
-  createdAt: Date;
+  createdAt?: string;
+  updatedAt?: string;
   lastLogin: Date;
   userRole: UserRole; 
   bidHistory?: Bid[];
