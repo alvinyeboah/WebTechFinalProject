@@ -2,39 +2,45 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 interface ArtworkCardProps {
-  id: string
-  title: string
-  artist: string
-  currentBid: number
-  imageUrl: string
-  endTime: Date
+  artwork_id: string;
+  title: string;
+  artist: {
+    id: string;
+    name: string;
+    bio?: string;
+  };
+  images: {
+    main: string;
+    thumbnails?: string[];
+    url: string;
+  };
+  currentPrice: number;
+  onClick?: () => void;
 }
 
 export function ArtworkCard({
-  id,
+  artwork_id,
   title,
   artist,
-  currentBid,
-  imageUrl,
-  endTime
+  images,
+  currentPrice,
+  onClick
 }: ArtworkCardProps) {
   return (
-    <Link href={`/artwork/${id}`}>
-      <div className="rounded-lg border p-4 hover:shadow-lg transition">
-        <Image
-          src={imageUrl}
-          alt={title}
-          width={300}
-          height={300}
-          className="rounded-md"
-        />
-        <h3 className="text-lg font-semibold mt-2">{title}</h3>
-        <p className="text-gray-600">by {artist}</p>
-        <p className="font-bold mt-2">Current Bid: ${currentBid}</p>
-        <p className="text-sm text-gray-500">
-          Ends: {endTime.toLocaleDateString()}
-        </p>
-      </div>
-    </Link>
-  )
+    <div 
+      onClick={onClick}
+      className="rounded-lg border p-4 hover:shadow-lg transition cursor-pointer"
+    >
+      <Image
+        src={images.url || images.main}
+        alt={title}
+        width={300}
+        height={300}
+        className="rounded-md"
+      />
+      <h3 className="text-lg font-semibold mt-2">{title}</h3>
+      <p className="text-gray-600">by {artist.name}</p>
+      <p className="font-bold mt-2">Current Price: ${currentPrice}</p>
+    </div>
+  );
 }

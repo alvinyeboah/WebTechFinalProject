@@ -1,81 +1,69 @@
 "use client"
-import { useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { useArtwork } from "@/hooks/useArtwork";
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SearchResults } from "@/components/artwork/SearchResults";
+import { Artwork, ExternalArtwork } from "@/types/artwork";
+import { useDebounce } from "@/hooks/useDebounce";
+
+
 export default function ArtworksPage() {
   const { artworks, loading, error, fetchArtworks } = useArtwork();
-  const router = useRouter(); 
-  useEffect(() => {
-    fetchArtworks();
-  }, []);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [externalResults, setExternalResults] = useState<ExternalArtwork[]>([]);
+  const router = useRouter();
+  const debouncedSearch = useDebounce(searchQuery, 500);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (debouncedSearch) {
+      fetchArtworks(debouncedSearch);
+    } else {
+      fetchArtworks();
+    }
+  }, [debouncedSearch]);
+
+  const handleSelectLocal = (artwork: Artwork) => {
+    router.push(`/artworks/${artwork.artwork_id}`);
+  };
+
+  const handleSelectExternal = (artwork: ExternalArtwork) => {
+    router.push(`/artworks/external/${artwork.source.toLowerCase()}/${artwork.id}`);
+  };
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500 text-center">
-          <h2 className="text-xl font-bold mb-2">Error</h2>
-          <p>{error}</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-800">{error}</p>
         </div>
       </div>
     );
   }
 
-
-  
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Art Gallery</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {artworks.map((artwork) => (
-          <Card key={artwork.artwork_id} className="overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-xl">{artwork.title}</CardTitle>
-            </CardHeader>
-
-            <CardContent>
-              <div className="aspect-square relative overflow-hidden rounded-md mb-4">
-                <img
-                  // Uncomment this when you have the actual image URL
-                  // src={artwork.images.url}
-                  alt={artwork.title}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <p className="text-gray-600">{artwork.description}</p>
-            </CardContent>
-
-            <CardFooter className="flex justify-between">
-              <span className="text-lg font-semibold">
-                ${artwork.currentPrice}
-              </span>
-              <Button
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                onClick={() => router.push(`/artworks/${artwork.artwork_id}`)} 
-              >
-                View Details
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-4">Art Gallery</h1>
+        <div className="max-w-2xl">
+          <Input
+            type="text"
+            placeholder="Search artworks across our gallery and museum collections..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
       </div>
+
+      <SearchResults
+        localResults={artworks}
+        externalResults={externalResults}
+        onSelectLocal={handleSelectLocal}
+        onSelectExternal={handleSelectExternal}
+        loading={loading}
+      />
     </div>
   );
 }

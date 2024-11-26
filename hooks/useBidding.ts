@@ -147,56 +147,13 @@ export const useBidding = (artworkId: string) => {
   };
 
   // Validate bid
-  const validateBid = (
-    amount: number,
-    userId: string,
-    automaticBid?: boolean,
-    maxBidAmount?: number
-  ): { valid: boolean; error?: string } => {
-    // Check minimum increment
-    if (amount - currentBid < validationRules.minIncrement) {
-      return { 
-        valid: false, 
-        error: `Minimum bid increment is ${validationRules.minIncrement}` 
-      };
-    }
-
-    // Check maximum bid limit
-    if (amount > validationRules.maxBidLimit) {
-      return { 
-        valid: false, 
-        error: `Maximum bid limit is ${validationRules.maxBidLimit}` 
-      };
-    }
-
-    // Check time window between bids
-    if (lastBidTime) {
-      const timeSinceLastBid = (new Date().getTime() - lastBidTime.getTime()) / 1000;
-      if (timeSinceLastBid < validationRules.timeWindow) {
-        return { 
-          valid: false, 
-          error: `Please wait ${validationRules.timeWindow} seconds between bids` 
-        };
-      }
-    }
-
-    // Validate automatic bid settings
-    if (automaticBid && maxBidAmount) {
-      if (maxBidAmount <= amount) {
-        return { 
-          valid: false, 
-          error: 'Maximum bid amount must be higher than initial bid' 
-        };
-      }
-      if (maxBidAmount > validationRules.maxBidLimit) {
-        return { 
-          valid: false, 
-          error: `Maximum automatic bid cannot exceed ${validationRules.maxBidLimit}` 
-        };
-      }
-    }
-
-    return { valid: true };
+  const validateBid = (amount: number) => {
+    // Implement your validation logic here
+    const isValid = amount > 0; // Example validation
+    return {
+      valid: isValid,
+      error: isValid ? null : 'Bid amount must be greater than zero',
+    };
   };
 
   // Handle realtime updates
@@ -231,7 +188,7 @@ export const useBidding = (artworkId: string) => {
     maxBidAmount?: number
   ): Promise<boolean> => {
     // Validate bid
-    const validation = validateBid(amount, userId, automaticBid, maxBidAmount);
+    const validation = validateBid(amount);
     if (!validation.valid) {
       setBidError(validation.error || 'Invalid bid');
       return false;
@@ -316,6 +273,6 @@ export const useBidding = (artworkId: string) => {
     cancelBid,
     updateBidStatus,
     clearBidError,
-    validationRules
+    validateBid,
   };
 };
