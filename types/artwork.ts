@@ -22,7 +22,7 @@ export interface Artwork {
     depth?: number;
     unit: 'cm' | 'in';
   };
-  year: number;
+  year: number | string;
   condition: ArtworkCondition;
   provenance?: string;
   currentPrice: number;
@@ -36,6 +36,8 @@ export interface Artwork {
   auctionEnd: Date;
   createdAt: Date;
   updatedAt: Date;
+  source?: 'LOCAL' | 'AIC' | 'MET';
+  externalId?: string;
 }
 
 export type ArtworkCategory =
@@ -61,3 +63,20 @@ export type ArtworkStatus =
   | 'SOLD'
   | 'EXPIRED'
   | 'CANCELLED';
+
+export interface ExternalArtwork {
+  id: string;
+  source: 'AIC' | 'MET';
+  title: string;
+  artist: string;
+  description?: string;
+  imageUrl: string;
+  images: {
+    main: string;
+    thumbnails?: string[];
+    url: string;
+  };
+  year?: string;
+  medium?: string;
+  dimensions?: string;
+}
