@@ -6,26 +6,9 @@ import UpcomingAuctions from "@/components/home/UpcomingAuctions";
 import FeaturedExhibition from "@/components/home/FeaturedExhibition";
 import { ArtworkService } from "@/services/artworkService";
 import { ExternalArtworkCard } from "@/components/artwork/ExternalArtworkCard";
+import { ExternalArtwork } from "@/types/artwork";
 
 const artworkService = new ArtworkService();
-
-interface ExternalArtwork {
-  id: string;
-  title: string;
-  artist: string;
-  description: string;
-  images: {
-    url: string;
-    main: string;
-    thumbnails?: string[];
-  };
-  source: string;
-  year: string;
-  medium: string;
-  dimensions: string;
-  currentPrice: number;
-  artwork_id: string;
-}
 
 export default function Page() {
   const [featuredArtworks, setFeaturedArtworks] = useState<ExternalArtwork[]>([]);
@@ -34,9 +17,14 @@ export default function Page() {
   useEffect(() => {
     const fetchFeaturedArtworks = async () => {
       try {
-        // Fetch a mix of artworks from different sources
         const aicArtworks = await artworkService.searchArtworks("masterpiece");
-        setFeaturedArtworks(aicArtworks.slice(0, 6)); // Limit to 6 items
+        function shuffleArray<T>(array: T[]): T[] {
+          return array
+            .map((item) => ({ item, sort: Math.random() })) // Assign random sort key
+            .sort((a, b) => a.sort - b.sort) // Sort by the random key
+            .map(({ item }) => item); // Extract the shuffled items
+        }
+        setFeaturedArtworks(shuffleArray(aicArtworks).slice(0, 5));
       } catch (error) {
         console.error("Error fetching featured artworks:", error);
       } finally {

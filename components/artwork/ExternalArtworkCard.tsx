@@ -24,7 +24,7 @@ export const ExternalArtworkCard: React.FC<ExternalArtworkCardProps> = ({
       <CardContent>
         <div className="aspect-square relative overflow-hidden rounded-md mb-4">
           <Image
-            src={artwork.imageUrl}
+            src={artwork.images.url || '/placeholder.svg'}
             alt={artwork.title}
             fill
             className="object-cover"

@@ -1,89 +1,104 @@
-// hooks/useArtwork.ts
-import { useState, useEffect } from 'react';
-import { Artwork } from '@/types/artwork';
-import { ApiResponseType } from '@/types/api';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Artwork, ExternalArtwork } from '@/types/artwork';
 import { ArtworkService } from '@/services/artworkService';
 
 const artworkService = new ArtworkService();
-const API_URL = '/api/artworks';
+const DEBOUNCE_DELAY = 500;
 
 export const useArtwork = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const fetchArtworks = async (query?: string): Promise<void> => {
+  const fetchArtworks = useCallback(async (query: string = "masterpiece"): Promise<void> => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     setLoading(true);
     setError(null);
     
     try {
-      // Fetch local artworks
-      const response = await fetch(API_URL);
-      
-      // Add status check with more detailed error
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch artworks: ${response.status} ${response.statusText}`
-        );
-      }
-
-      // Add response type check
-      const data = await response.json();
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid response format from API');
-      }
-
-      if ('error' in data) {
-        throw new Error(data.error);
-      }
-      
-      let combinedArtworks = data.data;
-
-      // If there's a search query, fetch from external APIs
-      if (query) {
-        const externalArtworks = await artworkService.searchArtworks(query);
-        combinedArtworks = [...combinedArtworks, ...externalArtworks];
-      }
-      
-      setArtworks(combinedArtworks);
+      const results = await artworkService.searchArtworks(query);
+      const transformedResults = results.map(ext => ({
+        artwork_id: ext.id,
+        title: ext.title,
+        description: ext.description || '',
+        artist: { id: 'external', name: ext.artist },
+        images: ext.images,
+        category: 'OTHER' as const,
+        condition: 'GOOD' as const,
+        status: 'ACTIVE' as const,
+        currentPrice: 0,
+        startingPrice: 0,
+        bids: [],
+        views: 0,
+        favorites: 0,
+        auctionStart: new Date(),
+        auctionEnd: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        source: ext.source,
+        year: ext.year || '',
+        medium: ext.medium || '',
+        dimensions: ext.dimensions
+      }));
+      setArtworks(transformedResults);
     } catch (err) {
       const errorMessage = err instanceof Error 
-        ? `Artwork fetch failed: ${err.message}`
+        ? err.message
         : 'An unexpected error occurred while fetching artworks';
       setError(errorMessage);
-      console.error('[useArtwork] fetchArtworks error:', {
-        error: err,
-        endpoint: API_URL,
-        query: query || 'none'
-      });
+      console.error('[useArtwork] fetchArtworks error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getArtworkById = async (id: string): Promise<Artwork | null> => {
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const getArtworkById = useCallback(async (id: string): Promise<Artwork | null> => {
+    if (loading) return null;
+    
     setLoading(true);
     setError(null);
     
     try {
-      // Check if it's an external artwork
-      if (id.startsWith('AIC_') || id.startsWith('MET_')) {
-        return await artworkService.getArtworkDetails(id);
-      }
-      
-      // Otherwise fetch from local API
-      const response = await fetch(`${API_URL}?id=${id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data: ApiResponseType<Artwork> = await response.json();
-      
-      if ('error' in data) {
-        throw new Error(data.error);
-      }
-      
-      return data.data;
+      const externalArtwork = await artworkService.getArtworkDetails(id);
+      return {
+        artwork_id: externalArtwork.id,
+        title: externalArtwork.title,
+        description: externalArtwork.description || '',
+        artist: {
+          id: `${externalArtwork.source}_ARTIST_${externalArtwork.id}`,
+          name: externalArtwork.artist
+        },
+        images: externalArtwork.images,
+        category: 'OTHER',
+        medium: externalArtwork.medium || 'Unknown',
+        year: externalArtwork.year || 'Unknown',
+        condition: 'GOOD',
+        currentPrice: 0,
+        startingPrice: 0,
+        status: 'ACTIVE',
+        bids: [],
+        views: 0,
+        favorites: 0,
+        auctionStart: new Date(),
+        auctionEnd: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        source: externalArtwork.source
+      };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching artwork';
       setError(errorMessage);
@@ -91,7 +106,7 @@ export const useArtwork = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading]);
 
   return {
     artworks,
