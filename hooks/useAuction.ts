@@ -1,19 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Auction } from '@/types/auction';
 import { Bid } from '@/types/bid';
-import { useWebSocket } from './useWebSocket';
 
+const POLLING_INTERVAL = 5000; // Poll every 5 seconds
 
 export function useAuction(auctionId: string) {
-  const [auction, setAuction] = useState<Auction | null>(null);
+  const [auction, setAuction] = useState<(Auction & { bids: Bid[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { sendMessage } = useWebSocket(`/ws/auctions/${auctionId}`);
-
   const fetchAuction = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await fetch(`/api/auctions/${auctionId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch auction');
@@ -40,12 +37,7 @@ export function useAuction(auctionId: string) {
         throw new Error(error.error || 'Failed to place bid');
       }
 
-      const data = await response.json();
-      sendMessage({
-        type: 'NEW_BID',
-        data: data.data
-      });
-
+      await fetchAuction(); // Refresh auction data
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to place bid');
@@ -53,11 +45,19 @@ export function useAuction(auctionId: string) {
     }
   };
 
+  // Poll for updates
+  useEffect(() => {
+    fetchAuction();
+    const interval = setInterval(fetchAuction, POLLING_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchAuction]);
+
   return {
     auction,
     loading,
     error,
-    fetchAuction,
-    placeBid
+    placeBid,
+    refreshAuction: fetchAuction
   };
 } 

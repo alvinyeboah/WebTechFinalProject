@@ -2,108 +2,69 @@
 
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { Poppins, Playfair_Display } from 'next/font/google'
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  variable: '--font-poppins',
-})
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['700'],
-  variable: '--font-playfair',
-})
-
-const genres = ['Abstract', 'Impressionism', 'Realism', 'Surrealism', 'Pop Art', 'Minimalism']
-const locations = ['New York', 'London', 'Paris', 'Tokyo', 'Berlin']
-const exhibitionTypes = ['Live', 'Online', 'Exhibition']
 
 export default function SortingSidebar() {
-  const [endDateSort, setEndDateSort] = useState('descending')
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([])
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
-
-  const toggleSelection = (item: string, state: string[], setState: React.Dispatch<React.SetStateAction<string[]>>) => {
-    if (state.includes(item)) {
-      setState(state.filter(i => i !== item))
-    } else {
-      setState([...state, item])
-    }
-  }
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000])
+  const [sortBy, setSortBy] = useState<string>('ending-soon')
+  const [categories, setCategories] = useState<string[]>([])
 
   return (
-    <aside className={`w-full md:w-1/5 bg-[#2A2C30] text-[#E6D5B8] p-6 rounded-lg mb-8 md:mb-0 md:mr-8 ${poppins.variable} ${playfair.variable} font-sans`}>
-      <h2 className={`${playfair.className} text-2xl font-bold mb-6 text-[#F0A500]`}>Filter & Sort</h2>
-
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">End Date</h3>
-        <button
-          onClick={() => setEndDateSort(endDateSort === 'ascending' ? 'descending' : 'ascending')}
-          className="flex items-center justify-between w-full px-3 py-2 bg-[#1A1C20] rounded-md hover:bg-[#3A3C40] transition-colors"
+    <div className="w-full md:w-64 bg-[#2A2C30] p-4 space-y-6">
+      <div>
+        <h3 className="text-[#F0A500] font-semibold mb-2">Sort By</h3>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-full bg-[#1A1C20] text-[#E6D5B8] p-2 rounded-md border border-[#F0A500] focus:outline-none"
         >
-          <span>{endDateSort === 'ascending' ? 'Oldest to Newest' : 'Newest to Oldest'}</span>
-          {endDateSort === 'ascending' ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
+          <option value="ending-soon">Ending Soon</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+        </select>
       </div>
 
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Category/Genre</h3>
-        <div className="space-y-2">
-          {genres.map(genre => (
-            <label key={genre} className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedGenres.includes(genre)}
-                onChange={() => toggleSelection(genre, selectedGenres, setSelectedGenres)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
-              />
-              <span>{genre}</span>
-            </label>
-          ))}
+      <div>
+        <h3 className="text-[#F0A500] font-semibold mb-2">Price Range</h3>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={priceRange[0]}
+            onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+            className="w-1/2 bg-[#1A1C20] text-[#E6D5B8] p-2 rounded-md border border-[#F0A500] focus:outline-none"
+            placeholder="Min"
+          />
+          <input
+            type="number"
+            value={priceRange[1]}
+            onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+            className="w-1/2 bg-[#1A1C20] text-[#E6D5B8] p-2 rounded-md border border-[#F0A500] focus:outline-none"
+            placeholder="Max"
+          />
         </div>
       </div>
 
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Location</h3>
-        <div className="space-y-2">
-          {locations.map(location => (
-            <label key={location} className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedLocations.includes(location)}
-                onChange={() => toggleSelection(location, selectedLocations, setSelectedLocations)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
-              />
-              <span>{location}</span>
-            </label>
-          ))}
-        </div>
+      <div>
+        <h3 className="text-[#F0A500] font-semibold mb-2">Categories</h3>
+        {['Paintings', 'Sculptures', 'Digital Art', 'Photography', 'Prints'].map((category) => (
+          <label key={category} className="flex items-center space-x-2 text-[#E6D5B8] mb-2">
+            <input
+              type="checkbox"
+              checked={categories.includes(category)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setCategories([...categories, category])
+                } else {
+                  setCategories(categories.filter(c => c !== category))
+                }
+              }}
+              className="form-checkbox text-[#F0A500]"
+            />
+            <span>{category}</span>
+          </label>
+        ))}
       </div>
-
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Exhibition Type</h3>
-        <div className="space-y-2">
-          {exhibitionTypes.map(type => (
-            <label key={type} className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedTypes.includes(type)}
-                onChange={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
-                className="form-checkbox text-[#F0A500] rounded border-[#E6D5B8] bg-[#1A1C20]"
-              />
-              <span>{type}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <button className="w-full px-4 py-2 bg-[#F0A500] text-[#1A1C20] rounded-md font-semibold hover:bg-[#E6D5B8] transition-colors">
-        Apply Filters
-      </button>
-    </aside>
+    </div>
   )
 }
 
