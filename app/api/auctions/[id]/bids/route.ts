@@ -7,25 +7,29 @@ import { createApiResponse } from '@/lib/utils/error-handling';
 
 const auctionService = new AuctionService();
 
-export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
-  const params = await props.params;
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
     if (!token) {
-      throw new Error('Unauthorized');
+      return NextResponse.json(
+        createApiResponse(401, null, 'Unauthorized'),
+        { status: 401 }
+      );
     }
 
     const user = await getUserFromToken(token);
     if (!user) {
-      throw new Error('Invalid token');
+      return NextResponse.json(
+        createApiResponse(401, null, 'Invalid token'),
+        { status: 401 }
+      );
     }
 
     const { amount } = await request.json();
-    const bid = await auctionService.placeBid(
-      params.id,
-      user.id,
-      amount
-    );
+    const bid = await auctionService.placeBid(params.id, user.id, amount);
 
     return NextResponse.json(createApiResponse(201, bid));
   } catch (error: any) {

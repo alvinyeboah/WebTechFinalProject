@@ -1,117 +1,117 @@
-import React from 'react';
-import { Poppins, Playfair_Display } from 'next/font/google';
-import { Calendar } from 'lucide-react';
+'use client'
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  variable: '--font-poppins',
-});
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { Clock, DollarSign, Users } from 'lucide-react'
+import { formatDistance } from 'date-fns'
+import { Auction } from '@/types/auction'
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['700'],
-  variable: '--font-playfair',
-});
+export default function AuctionsPage() {
+  const [auctions, setAuctions] = useState<Auction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-interface Auction {
-  id: number;
-  title: string;
-  artist: string;
-  image: string;
-  startDate: string;
-  endDate: string;
-}
+  useEffect(() => {
+    const fetchAuctions = async () => {
+      try {
+        const response = await fetch('/api/auctions?status=ACTIVE')
+        if (!response.ok) {
+          throw new Error('Failed to fetch auctions')
+        }
+        const data = await response.json()
+        setAuctions(data.data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-// Sample auction data
-const auctions: Auction[] = [
-  {
-    id: 1,
-    title: 'Ethereal Visions',
-    artist: 'Emma Thompson',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-01',
-    endDate: '2023-08-05',
-  },
-  {
-    id: 2,
-    title: 'Urban Rhythms',
-    artist: 'Michael Chen',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-03',
-    endDate: '2023-08-07',
-  },
-  {
-    id: 3,
-    title: 'Chromatic Dreams',
-    artist: 'Sophia Rodriguez',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-05',
-    endDate: '2023-08-10',
-  },
-  {
-    id: 4,
-    title: 'Sculptural Harmony',
-    artist: 'David Kim',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-07',
-    endDate: '2023-08-12',
-  },
-  {
-    id: 5,
-    title: 'Abstract Emotions',
-    artist: 'Olivia Wilson',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-10',
-    endDate: '2023-08-15',
-  },
-  {
-    id: 6,
-    title: 'Timeless Portraits',
-    artist: 'Alexander Lee',
-    image: '/placeholder.svg?height=300&width=400',
-    startDate: '2023-08-12',
-    endDate: '2023-08-17',
-  },
-];
+    fetchAuctions()
+  }, [])
 
-interface AuctionCardProps {
-  title: string;
-  artist: string;
-  image: string;
-  startDate: string;
-  endDate: string;
-}
-
-const AuctionCard: React.FC<AuctionCardProps> = ({ title, artist, image, startDate, endDate }) => (
-  <div className="bg-[#2A2C30] rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
-    <img src={image} alt={title} className="w-full h-48 object-cover" />
-    <div className="p-4">
-      <h3 className={`${playfair.className} text-xl font-bold text-[#F0A500] mb-2`}>{title}</h3>
-      <p className="text-[#E6D5B8] mb-2">{artist}</p>
-      <div className="flex items-center text-[#E6D5B8] text-sm">
-        <Calendar size={16} className="mr-2" />
-        <span>
-          {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
-        </span>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-[#F0A500]">Loading auctions...</div>
       </div>
-    </div>
-  </div>
-);
+    )
+  }
 
-const AuctionsPage: React.FC = () => {
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    )
+  }
+
   return (
-    <div className={`bg-[#1A1C20] min-h-screen ${poppins.variable} ${playfair.variable} font-sans`}>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className={`${playfair.className} text-4xl font-bold text-[#F0A500] mb-8 text-center`}>Current Auctions</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {auctions.map((auction) => (
-            <AuctionCard key={auction.id} {...auction} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-[#F0A500] mb-8">Active Auctions</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {auctions.map((auction) => (
+          <div 
+            key={auction.id}
+            className="bg-[#2A2C30] rounded-lg overflow-hidden shadow-lg cursor-pointer transform hover:scale-105 transition-transform duration-200"
+            onClick={() => router.push(`/auctions/${auction.id}`)}
+          >
+            <div className="relative h-48">
+              <Image
+                src={auction.image_url || '/placeholder.svg'}
+                alt={auction.title || 'Auction Item'}
+                layout="fill"
+                objectFit="cover"
+              />
+            </div>
+            
+            <div className="p-4">
+              <h2 className="text-xl font-semibold text-[#F0A500] mb-2">
+                {auction.title || 'Untitled Auction'}
+              </h2>
+              
+              <div className="space-y-2 text-[#E6D5B8]">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <DollarSign className="w-4 h-4 mr-1 text-[#F0A500]" />
+                    <span>Current Bid:</span>
+                  </div>
+                  <span className="font-semibold">
+                    ${auction.current_price.toLocaleString()}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-1 text-[#F0A500]" />
+                    <span>Ends:</span>
+                  </div>
+                  <span>
+                    {formatDistance(new Date(auction.end_time), new Date(), { addSuffix: true })}
+                  </span>
+                </div>
 
-export default AuctionsPage;
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-1 text-[#F0A500]" />
+                    <span>Min Increment:</span>
+                  </div>
+                  <span>${auction.min_bid_increment.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {auctions.length === 0 && (
+        <div className="text-center text-[#E6D5B8] py-8">
+          No active auctions found.
+        </div>
+      )}
+    </div>
+  )
+}

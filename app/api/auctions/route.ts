@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { AuctionService } from '@/services/auctionService';
 import { createApiResponse } from '@/lib/utils/error-handling';
 
-
-
 const auctionService = new AuctionService();
 
 export async function GET(request: Request) {
@@ -11,10 +9,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const source = searchParams.get('source');
+    const sortBy = searchParams.get('sortBy');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const category = searchParams.get('category');
 
     const auctions = await auctionService.getAuctions({ 
-      status: status as any, 
-      source: source as any 
+      status: status as any,
+      source: source as any,
+      sortBy: sortBy as any,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      category: category as any
     });
 
     return NextResponse.json(createApiResponse(200, auctions));
