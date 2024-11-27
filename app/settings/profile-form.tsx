@@ -27,8 +27,6 @@ import { useUpdateProfile } from "@/lib/hooks/updateUserProfile";
 import { UserRole } from "@/types/user";
 import { toast } from "react-hot-toast";
 
-
-
 const profileFormSchema = z.object({
   username: z
     .string()
@@ -64,7 +62,7 @@ export function ProfileForm() {
       username: "",
       email: "",
       bio: "",
-      userRole: "BUYER"
+      userRole: "BUYER",
     },
     mode: "onChange",
   });
@@ -80,13 +78,17 @@ export function ProfileForm() {
   }, [user, isLoading, form]);
   async function onSubmit(data: ProfileFormValues) {
     try {
-      await updateProfile(data);
-      toast.success("User Profile updated successfully");
+      const response = await updateProfile(data);
+      if (response.success) {
+        toast.success(response.message || "Profile updated successfully");
+      } else {
+        toast.error(response.error || "Failed to update profile");
+      }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
     }
   }
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -125,7 +127,8 @@ export function ProfileForm() {
                 <Input placeholder="Enter your email" {...field} />
               </FormControl>
               <FormDescription>
-              Your main email address used to sign in. Be careful when changing this
+                Your main email address used to sign in. Be careful when
+                changing this
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -144,9 +147,7 @@ export function ProfileForm() {
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
-                A little about yourself
-              </FormDescription>
+              <FormDescription>A little about yourself</FormDescription>
               <FormMessage />
             </FormItem>
           )}

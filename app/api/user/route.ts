@@ -7,17 +7,29 @@ import { UpdateUserData } from '@/lib/api-client';
 export async function POST(req: NextRequest) {
   try {
     const tokenCookie = req.cookies.get('authToken');
-    if (!tokenCookie || !tokenCookie.value) {
-      return NextResponse.json({ error: 'Unauthorized - No token' }, { status: 401 });
+    if (!tokenCookie?.value) {
+      return NextResponse.json(
+        { error: 'Unauthorized - No token' }, 
+        { status: 401 }
+      );
     }
 
     const user = await getUserFromToken(tokenCookie.value);
     if (!user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Invalid token' }, 
+        { status: 401 }
+      );
     }
 
     const updateData: UpdateUserData = await req.json();
-    
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: 'No update data provided' },
+        { status: 400 }
+      );
+    }
+
     // Build the SQL update query dynamically based on provided fields
     const updates: string[] = [];
     const values: any[] = [];
@@ -48,16 +60,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to update user' }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: 'User updated successfully' },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'User updated successfully'
+    }, { 
+      status: 200 
+    });
 
   } catch (error) {
     console.error('User update error:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Internal Server Error'
+    }, { 
+      status: 500 
+    });
   }
 }
