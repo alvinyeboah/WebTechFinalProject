@@ -55,6 +55,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.1",
     "react-hot-toast": "^2.4.1",
+    "react-loading-skeleton": "^3.5.0",
     "react-modal-video": "^2.0.2",
     "recharts": "^2.13.3",
     "tailwind-merge": "^2.5.4",
