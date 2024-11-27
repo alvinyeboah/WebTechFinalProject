@@ -73,7 +73,9 @@ export const useArtwork = () => {
     setError(null);
     
     try {
-      const externalArtwork = await artworkService.getArtworkDetails(id);
+      const externalArtwork = await artworkService.getArtworkById(id);
+      
+      // Transform external artwork to match Artwork type
       return {
         artwork_id: externalArtwork.id,
         title: externalArtwork.title,
@@ -87,7 +89,7 @@ export const useArtwork = () => {
         medium: externalArtwork.medium || 'Unknown',
         year: externalArtwork.year || 'Unknown',
         condition: 'GOOD',
-        currentPrice: 0,
+        currentPrice: externalArtwork.currentPrice || 0,
         startingPrice: 0,
         status: 'ACTIVE',
         bids: [],
@@ -97,7 +99,8 @@ export const useArtwork = () => {
         auctionEnd: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-        source: externalArtwork.source
+        source: externalArtwork.source,
+        dimensions: externalArtwork.dimensions
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching artwork';

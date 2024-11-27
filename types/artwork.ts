@@ -85,4 +85,5 @@ export interface ExternalArtwork {
   };
   artwork_id: string;
   imageUrl?: string;
+  currentPrice?: number;
 }
