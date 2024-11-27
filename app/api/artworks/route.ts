@@ -24,35 +24,32 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
+    let query = 'SELECT * FROM Artwork';
+    const params = [];
+
     if (id) {
-      const [artwork] = await db.query<ArtworkRow[]>(
-        'SELECT * FROM Artwork WHERE id = ?',
-        [id]
-      );
+      query += ' WHERE id = ?';
+      params.push(id);
+    }
 
-      if (!artwork.length) {
-        return NextResponse.json(
-          createApiResponse(404, null, 'Artwork not found'),
-          { status: 404 }
-        );
-      }
+    query += ' ORDER BY created_at DESC';
 
+    const [artworks] = await db.query<ArtworkRow[]>(query, params);
+
+    if (id && !artworks.length) {
       return NextResponse.json(
-        createApiResponse(200, artwork[0])
+        createApiResponse(404, null, 'Artwork not found'),
+        { status: 404 }
       );
     }
 
-    const [artworks] = await db.query<ArtworkRow[]>(
-      'SELECT * FROM Artwork ORDER BY created_at DESC'
-    );
-
     return NextResponse.json(
-      createApiResponse(200, artworks)
+      createApiResponse(200, id ? artworks[0] : artworks)
     );
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      createApiResponse(500, null, 'Failed to fetch artworks'),
+      createApiResponse(500, null, 'Internal server error'),
       { status: 500 }
     );
   }

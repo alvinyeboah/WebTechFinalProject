@@ -1,4 +1,4 @@
-import { Artwork, ArtworkCategory } from "@/types/artwork";
+import { Artwork, ArtworkCategory, ExternalArtwork } from "@/types/artwork";
 
 // services/artworkService.ts
 export class ArtworkService {
@@ -88,7 +88,7 @@ export class ArtworkService {
       return categoryMap[classification] || 'OTHER';
     }
   
-    async searchArtworks(query: string) {
+    async searchArtworks(query: string): Promise<ExternalArtwork[]> {
       const [aicResults, metResults] = await Promise.all([
         this.searchAIC(query),
         this.searchMET(query)
@@ -97,16 +97,74 @@ export class ArtworkService {
       return [...aicResults, ...metResults];
     }
   
-    async getArtworkDetails(id: string) {
-      const [source, originalId] = id.split('_');
+    async getArtworkDetails(id: string): Promise<ExternalArtwork> {
+      return this.getArtworkById(id);
+    }
+  
+    async getArtworkById(id: string): Promise<ExternalArtwork> {
+      const [source, artworkId] = id.split('_');
       
-      switch(source) {
-        case 'AIC':
-          return this.getAICArtwork(originalId);
-        case 'MET':
-          return this.getMETArtwork(originalId);
-        default:
-          throw new Error('Unsupported source');
+      if (source === 'AIC') {
+        return this.getAICDetails(artworkId);
+      } else if (source === 'MET') {
+        return this.getMETDetails(artworkId);
+      }
+      
+      throw new Error('Invalid artwork ID format');
+    }
+  
+    private async getAICDetails(id: string): Promise<ExternalArtwork> {
+      try {
+        const response = await fetch(`${this.sources.AIC}/artworks/${id}`);
+        const data = await response.json();
+        
+        return {
+          id: `AIC_${data.data.id}`,
+          title: data.data.title,
+          artist: data.data.artist_display,
+          description: data.data.description,
+          images: {
+            url: `https://www.artic.edu/iiif/2/${data.data.image_id}/full/843,/0/default.jpg`,
+            main: `https://www.artic.edu/iiif/2/${data.data.image_id}/full/843,/0/default.jpg`,
+          },
+          source: 'AIC',
+          year: data.data.date_display,
+          medium: data.data.medium_display,
+          dimensions: data.data.dimensions,
+          imageUrl: `https://www.artic.edu/iiif/2/${data.data.image_id}/full/843,/0/default.jpg`,
+          artwork_id: `AIC_${data.data.id}`
+        };
+      } catch (error) {
+        console.error('AIC API Error:', error);
+        throw new Error('Failed to fetch artwork details from AIC');
+      }
+    }
+  
+    private async getMETDetails(id: string): Promise<ExternalArtwork> {
+      try {
+        const response = await fetch(`${this.sources.MET}/objects/${id}`);
+        const data = await response.json();
+        
+        return {
+          id: `MET_${data.objectID}`,
+          title: data.title,
+          artist: data.artistDisplayName || data.culture || 'Unknown Artist',
+          description: data.description || `${data.objectName} from ${data.period || data.culture || 'unknown period'}`,
+          images: {
+            main: data.primaryImage || data.primaryImageSmall,
+            url: data.primaryImage || data.primaryImageSmall,
+            thumbnails: data.additionalImages
+          },
+          source: 'MET',
+          year: data.objectDate,
+          medium: data.medium,
+          dimensions: data.dimensions,
+          imageUrl: data.primaryImage || data.primaryImageSmall,
+          artwork_id: `MET_${data.objectID}`
+        };
+      } catch (error) {
+        console.error('MET API Error:', error);
+        throw new Error('Failed to fetch artwork details from MET');
       }
     }
   

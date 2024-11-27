@@ -26,18 +26,24 @@ export function ArtworkCard({
   currentPrice,
   onClick
 }: ArtworkCardProps) {
+  const imageUrl = images?.url || images?.main || '/placeholder.jpg';
+  
   return (
     <div 
       onClick={onClick}
       className="rounded-lg border p-4 hover:shadow-lg transition cursor-pointer"
     >
-      <Image
-        src={images.url || images.main}
-        alt={title}
-        width={300}
-        height={300}
-        className="rounded-md"
-      />
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt={title}
+          width={300}
+          height={300}
+          className="rounded-md object-cover"
+          placeholder="blur"
+          blurDataURL="/placeholder.jpg"
+        />
+      )}
       <h3 className="text-lg font-semibold mt-2">{title}</h3>
       <p className="text-gray-600">by {artist.name}</p>
       <p className="font-bold mt-2">Current Price: ${currentPrice}</p>
