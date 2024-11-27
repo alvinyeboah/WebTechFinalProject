@@ -7,10 +7,8 @@ import { createApiResponse } from '@/lib/utils/error-handling';
 
 const auctionService = new AuctionService();
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
     if (!token) {

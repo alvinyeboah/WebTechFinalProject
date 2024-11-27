@@ -66,17 +66,23 @@ export type ArtworkStatus =
 
 export interface ExternalArtwork {
   id: string;
-  source: 'AIC' | 'MET';
   title: string;
   artist: string;
   description?: string;
-  imageUrl: string;
   images: {
     main: string;
     thumbnails?: string[];
     url: string;
   };
+  source: 'AIC' | 'MET';
   year?: string;
   medium?: string;
-  dimensions?: string;
+  dimensions?: {
+    height: number;
+    width: number;
+    depth?: number;
+    unit: 'cm' | 'in';
+  };
+  artwork_id: string;
+  imageUrl?: string;
 }

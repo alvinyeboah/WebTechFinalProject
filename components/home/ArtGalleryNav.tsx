@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/galleryex", label: "Exhibitions" },
+  // { href: "/galleryex", label: "Exhibitions" },
   { href: "/artworks", label: "Artworks" },
   { href: "/auctions", label: "Auctions" },
 ];
