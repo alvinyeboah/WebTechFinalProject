@@ -7,10 +7,10 @@ export class ArtworkService {
       MET: 'https://collectionapi.metmuseum.org/public/collection/v1'
     };
   
-    private async searchAIC(query: string) {
+    private async searchAIC(query: string, offset: number = 0) {
       try {
         const response = await fetch(
-          `${this.sources.AIC}/artworks/search?q=${encodeURIComponent(query)}&limit=20&fields=id,title,artist_display,description,image_id,date_display,medium_display,dimensions`
+          `${this.sources.AIC}/artworks/search?q=${encodeURIComponent(query)}&limit=20&page=${Math.floor(offset/20) + 1}&fields=id,title,artist_display,description,image_id,date_display,medium_display,dimensions`
         );
         const data = await response.json();
         
@@ -36,14 +36,14 @@ export class ArtworkService {
       }
     }
   
-    private async searchMET(query: string) {
+    private async searchMET(query: string, offset: number = 0) {
       try {
         const searchResponse = await fetch(
           `${this.sources.MET}/search?q=${encodeURIComponent(query)}&hasImages=true`
         );
         const searchData = await searchResponse.json();
         
-        const objectIds = searchData.objectIDs?.slice(0, 20) || [];
+        const objectIds = searchData.objectIDs?.slice(offset, offset + 20) || [];
         const objectPromises = objectIds.map((id:any) =>
           fetch(`${this.sources.MET}/objects/${id}`).then(res => res.json())
         );
@@ -88,13 +88,23 @@ export class ArtworkService {
       return categoryMap[classification] || 'OTHER';
     }
   
-    async searchArtworks(query: string): Promise<ExternalArtwork[]> {
-      const [aicResults, metResults] = await Promise.all([
-        this.searchAIC(query),
-        this.searchMET(query)
-      ]);
-      
-      return [...aicResults, ...metResults];
+    async searchArtworks(query: string, page: number = 1): Promise<ExternalArtwork[]> {
+      try {
+        // Calculate offset based on page number (20 items per page)
+        const offset = (page - 1) * 20;
+        
+        const [aicResults, metResults] = await Promise.all([
+          this.searchAIC(query, offset),
+          this.searchMET(query, offset)
+        ]);
+        
+        // Combine and slice results to maintain consistent page size
+        const combinedResults = [...aicResults, ...metResults];
+        return combinedResults.slice(0, 20);
+      } catch (error) {
+        console.error('Search error:', error);
+        throw new Error('Failed to fetch artworks');
+      }
     }
   
     async getArtworkDetails(id: string): Promise<ExternalArtwork> {
