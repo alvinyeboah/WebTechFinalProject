@@ -25,9 +25,15 @@ export interface Auction {
 
 export interface CreateAuctionDTO {
   artwork_id: string;
+  title: string;
+  image_url: string | null;
+  description: string | null;
+  category: 'PAINTING' | 'SCULPTURE' | 'DIGITAL_ART' | 'PHOTOGRAPHY' | 'PRINT';
   start_price: number;
+  current_price: number;
   min_bid_increment: number;
   start_time: Date;
   end_time: Date;
+  status: AuctionStatus;
   source: 'LOCAL' | 'AIC' | 'MET';
 } 

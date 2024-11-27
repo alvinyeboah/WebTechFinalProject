@@ -32,6 +32,20 @@ export default function AuctionsPage() {
     fetchAuctions()
   }, [])
 
+  const getImageUrl = (auction: Auction) => {
+    if (!auction.image_url) return '/placeholder.jpg'
+    
+    if (auction.source === 'AIC') {
+      // Art Institute of Chicago image format
+      return `https://www.artic.edu/iiif/2/${auction.image_url}/full/843,/0/default.jpg`
+    } else if (auction.source === 'MET') {
+      // Metropolitan Museum image format
+      return auction.image_url
+    }
+    
+    return auction.image_url
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -61,10 +75,12 @@ export default function AuctionsPage() {
           >
             <div className="relative h-48">
               <Image
-                src={auction.image_url || '/placeholder.svg'}
+                src={getImageUrl(auction)}
                 alt={auction.title || 'Auction Item'}
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={false}
               />
             </div>
             

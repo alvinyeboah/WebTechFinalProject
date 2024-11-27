@@ -4,10 +4,8 @@ import { createApiResponse } from '@/lib/utils/error-handling';
 
 const auctionService = new AuctionService();
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const auction = await auctionService.getAuctionWithBids(params.id);
     return NextResponse.json(createApiResponse(200, auction));
