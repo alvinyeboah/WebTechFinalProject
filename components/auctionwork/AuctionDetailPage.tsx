@@ -135,7 +135,7 @@ export default function AuctionDetailPage() {
               <div className="space-y-2">
                 {auction.bids.map((bid) => (
                   <div key={bid.id} className="flex justify-between items-center">
-                    <span className="text-sm">User #{bid.user_id.slice(-4)}</span>
+                    <span className="text-sm">User #{bid.userId}</span>
                     <span className="font-semibold">${bid.amount.toLocaleString()}</span>
                   </div>
                 ))}
