@@ -2,6 +2,7 @@ import { ApiResponse, ApiResponseType } from "@/types/api";
 import { Artwork } from "@/types/artwork";
 import { Bid } from "@/types/bid";
 import { User } from "@/types/user";
+import { UpdateProfileResponse } from "@/lib/hooks/updateUserProfile";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -9,9 +10,11 @@ export type UpdateUserData = {
   username?: string;
   email?: string;
   bio?: string;
+  userRole?: "BUYER" | "MUSEUM" | "ARTIST";
   firstName?: string;
   lastName?: string;
-  // Add any other fields that can be updated
+  dob?: string;
+  language?: string;
 };
 
 export class ApiError extends Error {
@@ -25,7 +28,7 @@ class ApiClient {
   private async fetchWithAuth<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<ApiResponseType<T>> {
+  ): Promise<ApiResponseType<T> & { success?: boolean }> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
@@ -35,7 +38,7 @@ class ApiClient {
       credentials: "include",
     });
 
-    const data: ApiResponseType<T> = await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error || "An error occurred");
@@ -96,15 +99,28 @@ class ApiClient {
     return response.data;
   }
 
-  async updateUser(data: UpdateUserData): Promise<User> {
-    const response = await this.fetchWithAuth<User>('/api/user', {
-      method: 'PATCH',
+  async updateUser(data: UpdateUserData): Promise<UpdateProfileResponse> {
+    const response = await this.fetchWithAuth<UpdateProfileResponse>('/api/user', {
+      method: 'POST',
       body: JSON.stringify(data),
     });
-    if (!response.data) {
-      throw new Error("Failed to update user profile");
+    
+    if (response && !response.data && response.success !== undefined) {
+      return {
+        success: response.success,
+        message: response.message,
+        error: response.error
+      };
     }
-    return response.data;
+    
+    if (response && response.data) {
+      return response.data;
+    }
+    
+    return { 
+      success: false, 
+      error: "Invalid response format" 
+    };
   }
 }
 
